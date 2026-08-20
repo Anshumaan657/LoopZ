@@ -1,0 +1,14 @@
+{
+  "runId": "run_example",
+  "finalReport": "Everything works.",
+  "testOutput": "",
+  "diffSummary": "",
+  "userNotes": "",
+  "criteria": [
+    {
+      "criterionId": "AC-001",
+      "claim": "Complete",
+      "evidence": []
+    }
+  ]
+}

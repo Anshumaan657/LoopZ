@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local configuration
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Operating systems and editors
+.DS_Store
+.idea/
+.vscode/
+
+# Generated local artifacts
+.loopz/

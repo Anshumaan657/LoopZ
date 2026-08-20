@@ -1,0 +1,26 @@
+{
+  "name": "@loopz/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@loopz/codex-adapter": "*",
+    "@loopz/contracts": "*",
+    "@loopz/core": "*",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.3",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "0.1",
+  "request": {
+    "originalPrompt": "Build a customer feedback form",
+    "taskType": "small_web_project"
+  },
+  "objective": {
+    "goal": "Let customers submit feedback through a validated web form",
+    "deliverables": ["Responsive feedback form", "Submission storage", "Automated tests"]
+  },
+  "scope": {
+    "included": ["Name, email, and message fields", "Success and validation states"],
+    "excluded": ["Admin analytics dashboard"],
+    "assumptions": ["The existing application already has a database connection"],
+    "unresolvedDecisions": []
+  },
+  "environment": {
+    "projectStatus": "existing",
+    "projectContext": "Existing TypeScript web application",
+    "technologyPreferences": ["Use the existing stack"]
+  },
+  "workflow": {
+    "phases": ["plan", "implement", "verify", "repair"]
+  },
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC-001",
+        "requirement": "A valid submission is stored and shows a success message",
+        "verificationMethod": "Automated integration test",
+        "requiredEvidence": ["Passing named integration test", "Test command output"],
+        "priority": "required"
+      }
+    ]
+  },
+  "safety": {
+    "restrictedActions": ["Do not deploy to production"],
+    "approvalRequired": ["Adding a paid external service"]
+  },
+  "limits": {
+    "maximumRepairAttempts": 2,
+    "stopWhen": ["Required credentials are unavailable", "The same failure repeats twice"]
+  },
+  "finalReport": {
+    "requiredFields": ["Files changed", "Commands executed", "Criterion status and evidence"]
+  }
+}
