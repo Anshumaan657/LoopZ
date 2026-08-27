@@ -1,14 +1,16 @@
 {
+  "schemaVersion": "0.1",
+  "submissionId": "submission_example",
   "runId": "run_example",
+  "submittedAt": "2026-08-27T00:00:00.000Z",
   "finalReport": "Everything works.",
-  "testOutput": "",
-  "diffSummary": "",
-  "userNotes": "",
+  "evidenceItems": [],
   "criteria": [
     {
       "criterionId": "AC-001",
       "claim": "Complete",
-      "evidence": []
+      "evidenceIds": []
     }
-  ]
+  ],
+  "userNotes": ""
 }

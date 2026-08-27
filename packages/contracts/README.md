@@ -9,3 +9,16 @@ Rules:
 - User decisions include provenance.
 - Provider-specific instructions do not belong here.
 - JSON Schema exports in `schemas/` are interoperability artifacts; TypeScript runtime validation lives in `src/`.
+
+Implemented Phase 2 contracts:
+
+- LoopSpec Lite and decision provenance
+- Extracted intent, clarification questions, and user answers
+- Rendered artifact metadata
+- Run states and run records
+- Evidence submissions and evidence items
+- Criterion assessments
+- Bounded repair tasks
+- Stable validation issues
+
+See `docs/architecture/loopspec-lite.md`, `validation-rule-catalog.md`, and `schema-versioning-policy.md` for the contract rules.

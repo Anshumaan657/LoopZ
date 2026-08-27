@@ -1,0 +1,112 @@
+{
+  "schemaVersion": "0.1",
+  "request": {
+    "originalPrompt": "Add a feedback form",
+    "taskType": {
+      "value": "existing_app_feature",
+      "source": "user_selected",
+      "confidence": 1,
+      "explanation": "Selected by the user",
+      "confirmedByUser": true
+    }
+  },
+  "objective": {
+    "goal": {
+      "value": "Collect customer feedback",
+      "source": "user_provided",
+      "confidence": 1,
+      "explanation": "Provided by the user",
+      "confirmedByUser": true
+    },
+    "deliverables": [
+      {
+        "id": "REQ-001",
+        "description": "Feedback form",
+        "priority": "required",
+        "provenance": {
+          "value": "Feedback form",
+          "source": "user_provided",
+          "confidence": 1,
+          "explanation": "Provided by the user",
+          "confirmedByUser": true
+        }
+      }
+    ]
+  },
+  "scope": {
+    "included": [
+      {
+        "id": "SCOPE-IN-001",
+        "description": "Store customer feedback",
+        "provenance": {
+          "value": "Store customer feedback",
+          "source": "user_selected",
+          "confidence": 1,
+          "explanation": "Included by the user",
+          "confirmedByUser": true
+        }
+      }
+    ],
+    "excluded": [
+      {
+        "id": "SCOPE-OUT-001",
+        "description": "Store customer feedback!",
+        "provenance": {
+          "value": "Store customer feedback!",
+          "source": "inferred",
+          "confidence": 0.5,
+          "explanation": "Conflicting fixture",
+          "confirmedByUser": false
+        }
+      }
+    ],
+    "assumptions": [],
+    "unresolvedDecisions": []
+  },
+  "environment": {
+    "projectStatus": {
+      "value": "existing",
+      "source": "user_selected",
+      "confidence": 1,
+      "explanation": "Existing application",
+      "confirmedByUser": true
+    },
+    "projectContext": {
+      "value": "Existing web application",
+      "source": "user_provided",
+      "confidence": 0.8,
+      "explanation": "Provided context",
+      "confirmedByUser": true
+    },
+    "technologyPreferences": []
+  },
+  "workflow": {
+    "phases": ["plan", "implement", "verify", "repair"]
+  },
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC-001",
+        "requirementIds": ["REQ-001"],
+        "requirement": "Valid feedback is stored",
+        "verificationMethod": "Automated integration test",
+        "requiredEvidence": ["Passing integration-test output"],
+        "priority": "required"
+      }
+    ]
+  },
+  "safety": {
+    "restrictedActions": ["Do not deploy"],
+    "approvalRequired": [],
+    "plannedActions": []
+  },
+  "limits": {
+    "maximumRepairAttempts": 2,
+    "stopWhen": ["The same failure repeats twice"]
+  },
+  "finalReport": {
+    "requiredFields": ["Criterion status and evidence"],
+    "criterionIdReferencesRequired": true,
+    "evidenceReferencesRequired": true
+  }
+}

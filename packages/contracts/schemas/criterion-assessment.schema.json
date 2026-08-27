@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.1"
+    },
+    "assessmentId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceSubmissionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "completed_with_evidence",
+        "partially_completed",
+        "repair_recommended",
+        "blocked_human_input_required",
+        "unverifiable_more_evidence_required",
+        "unsafe_or_out_of_scope"
+      ]
+    },
+    "criteria": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommendedNextAction": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assessedAt": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "assessmentId",
+    "runId",
+    "evidenceSubmissionId",
+    "outcome",
+    "criteria",
+    "risks",
+    "recommendedNextAction",
+    "assessedAt"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "object",
+      "properties": {
+        "criterionId": {
+          "type": "string",
+          "pattern": "^AC-[0-9]{3}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "verified_by_submitted_evidence",
+            "partially_supported",
+            "unsupported_claim",
+            "failed",
+            "blocked",
+            "not_attempted",
+            "unverifiable",
+            "not_applicable"
+          ]
+        },
+        "evidenceReferences": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^EV-[0-9]{3}$"
+          }
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "criterionId",
+        "status",
+        "evidenceReferences",
+        "explanation",
+        "confidence"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$id": "https://loopz.dev/schemas/criterion-assessment.schema.json",
+  "title": "Criterion Assessment 0.1"
+}

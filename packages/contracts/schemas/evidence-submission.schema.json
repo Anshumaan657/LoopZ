@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.1"
+    },
+    "submissionId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "submittedAt": {
+      "type": "string",
+      "minLength": 1
+    },
+    "finalReport": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidenceItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/__schema0"
+          },
+          "type": {
+            "$ref": "#/$defs/__schema1"
+          },
+          "description": {
+            "$ref": "#/$defs/__schema2"
+          },
+          "content": {
+            "$ref": "#/$defs/__schema3"
+          },
+          "uri": {
+            "$ref": "#/$defs/__schema4"
+          },
+          "command": {
+            "$ref": "#/$defs/__schema5"
+          },
+          "exitCode": {
+            "$ref": "#/$defs/__schema6"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "criteria": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema7"
+      }
+    },
+    "userNotes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "submissionId",
+    "runId",
+    "submittedAt",
+    "finalReport",
+    "evidenceItems",
+    "criteria",
+    "userNotes"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "pattern": "^EV-[0-9]{3}$"
+    },
+    "__schema1": {
+      "type": "string",
+      "enum": [
+        "command_output",
+        "test_output",
+        "diff_summary",
+        "screenshot",
+        "file_reference",
+        "agent_report",
+        "user_observation"
+      ]
+    },
+    "__schema2": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema3": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema4": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema5": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema6": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "__schema7": {
+      "type": "object",
+      "properties": {
+        "criterionId": {
+          "type": "string",
+          "pattern": "^AC-[0-9]{3}$"
+        },
+        "claim": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidenceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      },
+      "required": [
+        "criterionId",
+        "claim",
+        "evidenceIds"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$id": "https://loopz.dev/schemas/evidence-submission.schema.json",
+  "title": "Evidence Submission 0.1"
+}

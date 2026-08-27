@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "0.1",
+  "request": {
+    "originalPrompt": "Build a form",
+    "taskType": {
+      "value": "existing_app_feature",
+      "source": "user_selected",
+      "confidence": 1,
+      "explanation": "Selected by the user",
+      "confirmedByUser": true
+    }
+  },
+  "acceptance": {
+    "criteria": [
+      {
+        "id": "AC-001",
+        "requirementIds": ["REQ-001"],
+        "requirement": "The form submits",
+        "verificationMethod": "Automated test",
+        "requiredEvidence": [],
+        "priority": "required"
+      }
+    ]
+  }
+}

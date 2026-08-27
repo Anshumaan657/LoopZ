@@ -2,22 +2,134 @@
   "schemaVersion": "0.1",
   "request": {
     "originalPrompt": "Build a customer feedback form",
-    "taskType": "small_web_project"
+    "taskType": {
+      "value": "existing_app_feature",
+      "source": "user_selected",
+      "confidence": 1,
+      "explanation": "The participant selected an existing-application feature.",
+      "confirmedByUser": true
+    }
   },
   "objective": {
-    "goal": "Let customers submit feedback through a validated web form",
-    "deliverables": ["Responsive feedback form", "Submission storage", "Automated tests"]
+    "goal": {
+      "value": "Let customers submit feedback through a validated web form",
+      "source": "user_provided",
+      "confidence": 1,
+      "explanation": "Confirmed by the participant during scope review.",
+      "confirmedByUser": true
+    },
+    "deliverables": [
+      {
+        "id": "REQ-001",
+        "description": "Responsive feedback form with name, email, and message fields",
+        "priority": "required",
+        "provenance": {
+          "value": "Responsive feedback form with name, email, and message fields",
+          "source": "user_provided",
+          "confidence": 1,
+          "explanation": "Fields were confirmed by the participant.",
+          "confirmedByUser": true
+        }
+      },
+      {
+        "id": "REQ-002",
+        "description": "Persist valid feedback using the existing database connection",
+        "priority": "required",
+        "provenance": {
+          "value": "Persist valid feedback using the existing database connection",
+          "source": "user_selected",
+          "confidence": 1,
+          "explanation": "The participant selected database persistence.",
+          "confirmedByUser": true
+        }
+      },
+      {
+        "id": "REQ-003",
+        "description": "Automated tests for valid and invalid submissions",
+        "priority": "required",
+        "provenance": {
+          "value": "Automated tests for valid and invalid submissions",
+          "source": "recommended",
+          "confidence": 0.9,
+          "explanation": "Tests provide machine-checkable verification.",
+          "confirmedByUser": true
+        }
+      }
+    ]
   },
   "scope": {
-    "included": ["Name, email, and message fields", "Success and validation states"],
-    "excluded": ["Admin analytics dashboard"],
-    "assumptions": ["The existing application already has a database connection"],
+    "included": [
+      {
+        "id": "SCOPE-IN-001",
+        "description": "Name, email, and message fields",
+        "provenance": {
+          "value": "Name, email, and message fields",
+          "source": "user_provided",
+          "confidence": 1,
+          "explanation": "Explicitly requested fields.",
+          "confirmedByUser": true
+        }
+      },
+      {
+        "id": "SCOPE-IN-002",
+        "description": "Success and validation states",
+        "provenance": {
+          "value": "Success and validation states",
+          "source": "recommended",
+          "confidence": 0.95,
+          "explanation": "Required to make the form behavior observable.",
+          "confirmedByUser": true
+        }
+      }
+    ],
+    "excluded": [
+      {
+        "id": "SCOPE-OUT-001",
+        "description": "Admin analytics dashboard",
+        "provenance": {
+          "value": "Admin analytics dashboard",
+          "source": "user_selected",
+          "confidence": 1,
+          "explanation": "Explicitly excluded from the task.",
+          "confirmedByUser": true
+        }
+      }
+    ],
+    "assumptions": [
+      {
+        "value": "The existing application already has a database connection",
+        "source": "user_provided",
+        "confidence": 0.9,
+        "explanation": "Repository access was not available during contract creation.",
+        "confirmedByUser": true
+      }
+    ],
     "unresolvedDecisions": []
   },
   "environment": {
-    "projectStatus": "existing",
-    "projectContext": "Existing TypeScript web application",
-    "technologyPreferences": ["Use the existing stack"]
+    "projectStatus": {
+      "value": "existing",
+      "source": "user_selected",
+      "confidence": 1,
+      "explanation": "The task targets an existing application.",
+      "confirmedByUser": true
+    },
+    "projectContext": {
+      "value": "Existing TypeScript web application",
+      "source": "user_provided",
+      "confidence": 0.8,
+      "explanation": "Context supplied by the participant.",
+      "confirmedByUser": true
+    },
+    "technologyPreferences": [
+      {
+        "value": "Use the existing stack",
+        "source": "user_selected",
+        "confidence": 1,
+        "explanation": "Avoid unnecessary technology changes.",
+        "confirmedByUser": true
+      }
+    ]
   },
   "workflow": {
     "phases": ["plan", "implement", "verify", "repair"]
@@ -26,22 +138,48 @@
     "criteria": [
       {
         "id": "AC-001",
+        "requirementIds": ["REQ-001"],
+        "requirement": "The form renders all required fields and shows validation errors for invalid input",
+        "verificationMethod": "Automated component test",
+        "requiredEvidence": ["Passing named component test", "Test command output"],
+        "priority": "required"
+      },
+      {
+        "id": "AC-002",
+        "requirementIds": ["REQ-002"],
         "requirement": "A valid submission is stored and shows a success message",
         "verificationMethod": "Automated integration test",
         "requiredEvidence": ["Passing named integration test", "Test command output"],
+        "priority": "required"
+      },
+      {
+        "id": "AC-003",
+        "requirementIds": ["REQ-003"],
+        "requirement": "The test suite covers successful and rejected submissions",
+        "verificationMethod": "Run the project test command",
+        "requiredEvidence": ["Test names", "Passing test command output"],
         "priority": "required"
       }
     ]
   },
   "safety": {
-    "restrictedActions": ["Do not deploy to production"],
-    "approvalRequired": ["Adding a paid external service"]
+    "restrictedActions": ["Do not deploy to production", "Do not expose credentials"],
+    "approvalRequired": ["Adding a paid external service"],
+    "plannedActions": [
+      {
+        "action": "Modify application source files and tests",
+        "category": "other",
+        "requiresApproval": false
+      }
+    ]
   },
   "limits": {
     "maximumRepairAttempts": 2,
     "stopWhen": ["Required credentials are unavailable", "The same failure repeats twice"]
   },
   "finalReport": {
-    "requiredFields": ["Files changed", "Commands executed", "Criterion status and evidence"]
+    "requiredFields": ["Files changed", "Commands executed", "Criterion status and evidence"],
+    "criterionIdReferencesRequired": true,
+    "evidenceReferencesRequired": true
   }
 }

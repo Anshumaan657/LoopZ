@@ -9,3 +9,10 @@ Each fixture records:
 - Expected deterministic validation result.
 - Returned evidence when applicable.
 - Expected criterion statuses.
+
+Phase 2 includes:
+
+- A complete schema-valid LoopSpec fixture.
+- A schema-invalid fixture.
+- A schema-valid but semantically invalid scope-conflict fixture.
+- Evidence that intentionally contains an unsupported success claim.

@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "generate:schemas": "npm run build && node dist/generate-json-schemas.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
@@ -15,6 +16,7 @@
     "zod": "4.4.3"
   },
   "devDependencies": {
+    "@types/node": "26.2.0",
     "typescript": "7.0.2",
     "vitest": "4.1.11"
   }
