@@ -1,5 +1,9 @@
 # Concierge validation protocol
 
+The complete, executable Phase 1 kit lives in [`docs/validation`](../validation/README.md). It includes recruitment copy, consent and privacy rules, intake and interview scripts, LoopSpec and agent-task templates, evidence assessment, bounded repair, debrief, analysis guidance, an exit decision, and the experiment workbook.
+
+This page is the short research summary. Use the validation kit to run sessions.
+
 ## Objective
 
 Determine whether the LoopZ workflow improves real coding-agent outcomes before automating the full product.
@@ -36,3 +40,5 @@ Determine whether the LoopZ workflow improves real coding-agent outcomes before 
 ## Decision
 
 Continue only if users value the contract plus evidence/repair cycle—not merely the appearance of a detailed prompt.
+
+Do not record Phase 1 as complete until the real participant and evidence-return targets are met. Producing the templates is operational readiness, not validated demand.

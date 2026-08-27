@@ -46,6 +46,7 @@ docs/
   architecture/        System boundaries and architectural decisions
   product/             MVP scope, user flow, and terminology
   research/            Concierge-study protocol and findings
+  validation/          Complete Phase 1 operating kit and experiment tracker
   security/            Threat model and privacy boundaries
   evaluation/          Benchmark and measurement design
 ```
@@ -83,4 +84,6 @@ web → codex-adapter → contracts
 
 ## Current status
 
-This repository contains the proposed MVP foundation for review. Product features are intentionally not implemented yet.
+The MVP foundation and the complete Phase 1 concierge-validation operating kit are ready. Start with [docs/validation/README.md](docs/validation/README.md).
+
+Real participant fieldwork has not been claimed as complete: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before Phase 2 automation begins.
