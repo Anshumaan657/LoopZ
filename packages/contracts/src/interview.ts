@@ -1,32 +1,8 @@
 import { z } from "zod";
 
-import { decisionSchema, taskTypeSchema } from "./loopspec.js";
+import { riskCategorySchema } from "./intake.js";
 
-export const riskCategorySchema = z.enum([
-  "authorization",
-  "primary_flow",
-  "roles_and_access",
-  "authentication",
-  "data_handling",
-  "payments",
-  "external_integrations",
-  "repository_context",
-  "deployment",
-  "verification",
-  "scope",
-  "visual_behavior",
-]);
-
-export const extractedUserIntentSchema = z
-  .object({
-    originalPrompt: z.string().trim().min(1),
-    taskType: decisionSchema(taskTypeSchema),
-    goal: decisionSchema(z.string().trim().min(1)),
-    requestedCapabilities: z.array(z.string().trim().min(1)),
-    constraints: z.array(z.string().trim().min(1)),
-    unknowns: z.array(z.string().trim().min(1)),
-  })
-  .strict();
+export * from "./intake.js";
 
 export const clarificationQuestionSchema = z
   .object({
@@ -47,7 +23,5 @@ export const userAnswerSchema = z
   })
   .strict();
 
-export type ExtractedUserIntent = z.infer<typeof extractedUserIntentSchema>;
 export type ClarificationQuestion = z.infer<typeof clarificationQuestionSchema>;
 export type UserAnswer = z.infer<typeof userAnswerSchema>;
-export type RiskCategory = z.infer<typeof riskCategorySchema>;

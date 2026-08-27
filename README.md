@@ -84,6 +84,6 @@ web → codex-adapter → contracts
 
 ## Current status
 
-The MVP foundation and the complete Phase 1 concierge-validation operating kit are ready. Start with [docs/validation/README.md](docs/validation/README.md).
+The MVP foundation, Phase 1 validation kit, Phase 2 domain contracts, and Phase 3 idea-intake workflow are implemented. The first usable product route is `/projects/new`; its architecture is documented in [docs/architecture/phase-3-idea-intake.md](docs/architecture/phase-3-idea-intake.md).
 
-Real participant fieldwork has not been claimed as complete: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before Phase 2 automation begins.
+Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product-market validation. Phase 4 will turn the gaps found during intake into a bounded clarification interview.
