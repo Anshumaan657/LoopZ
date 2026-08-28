@@ -149,7 +149,7 @@ function detectMissingInformation(intake: IdeaIntake): MissingInformation[] {
     });
   }
 
-  if (!/\b(user|visitor|customer|admin|owner|team|client|member)\b/.test(prompt)) {
+  if (!/\b(users?|visitors?|customers?|admins?|owners?|teams?|clients?|members?)\b/.test(prompt)) {
     missing.push({
       category: "primary_flow",
       reason: "The main user and their successful end-to-end action are not explicit.",

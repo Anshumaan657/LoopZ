@@ -1,13 +1,10 @@
-import { StagePage } from "../../../../components/stage-page";
+import { ClarificationInterview } from "../../../../features/interview/clarification-interview";
 
-export default function InterviewPage() {
-  return (
-    <StagePage
-      eyebrow="Stage 2 · Clarification"
-      title="Resolve only what changes the outcome."
-      description="This route will ask one risk-based question at a time, preserve provenance, surface contradictions, and stop after the configured question budget."
-      nextHref="/projects/example/contract"
-      nextLabel="Preview contract route"
-    />
-  );
+export default async function InterviewPage({
+  params,
+}: {
+  params: Promise<{ projectId: string }>;
+}) {
+  const { projectId } = await params;
+  return <ClarificationInterview projectId={projectId} />;
 }

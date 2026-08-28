@@ -84,6 +84,6 @@ web → codex-adapter → contracts
 
 ## Current status
 
-The MVP foundation, Phase 1 validation kit, Phase 2 domain contracts, and Phase 3 idea-intake workflow are implemented. The first usable product route is `/projects/new`; its architecture is documented in [docs/architecture/phase-3-idea-intake.md](docs/architecture/phase-3-idea-intake.md).
+The MVP foundation, Phase 1 validation kit, Phase 2 domain contracts, Phase 3 idea intake, and Phase 4 risk-based clarification interview are implemented. The usable workflow now runs from `/projects/new` into the project-specific interview route. See [Phase 3 intake](docs/architecture/phase-3-idea-intake.md) and [Phase 4 clarification](docs/architecture/phase-4-clarification-interview.md).
 
-Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product-market validation. Phase 4 will turn the gaps found during intake into a bounded clarification interview.
+Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product-market validation. Phase 5 will compile the confirmed intake and clarification answers into the execution contract.
