@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./intake": "./src/intake.ts"
+    "./intake": "./src/intake.ts",
+    "./loopspec": "./src/loopspec.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

@@ -84,6 +84,78 @@ export const safetyActionSchema = z
   })
   .strict();
 
+export const contractInterviewCategorySchema = z.enum([
+  "authorization",
+  "primary_flow",
+  "roles_and_access",
+  "authentication",
+  "data_handling",
+  "payments",
+  "external_integrations",
+  "repository_context",
+  "deployment",
+  "verification",
+  "scope",
+  "visual_behavior",
+]);
+
+export const contractFoundationSchema = z
+  .object({
+    schemaVersion: z.literal(LOOP_SPEC_SCHEMA_VERSION),
+    status: z.literal("foundation_draft"),
+    projectId: z.string().uuid(),
+    compilation: z
+      .object({
+        sourceInterviewUpdatedAt: z.string().datetime(),
+        compiledAt: z.string().datetime(),
+      })
+      .strict(),
+    request: z
+      .object({
+        originalPrompt: z.string().trim().min(1),
+        taskType: decisionSchema(taskTypeSchema),
+      })
+      .strict(),
+    objective: z
+      .object({
+        goal: decisionSchema(z.string().trim().min(1)),
+        deliverables: z.array(requirementSchema).min(1),
+      })
+      .strict(),
+    scope: z
+      .object({
+        included: z.array(scopeItemSchema).min(1),
+        excluded: z.array(scopeItemSchema),
+        assumptions: z.array(decisionSchema(z.string().trim().min(1))),
+      })
+      .strict(),
+    environment: z
+      .object({
+        projectStatus: decisionSchema(z.enum(["new", "existing"])),
+        projectContext: decisionSchema(z.string().trim().min(1)),
+        technologyPreferences: z.array(decisionSchema(z.string().trim().min(1))),
+      })
+      .strict(),
+    interviewDecisions: z.array(
+      z
+        .object({
+          questionId: z.string().regex(/^Q-[0-9]{3}$/),
+          category: contractInterviewCategorySchema,
+          question: z.string().trim().min(1),
+          answer: z.string().trim().min(1),
+          answeredAt: z.string().datetime(),
+        })
+        .strict(),
+    ),
+    pendingSections: z.tuple([
+      z.literal("acceptance"),
+      z.literal("safety"),
+      z.literal("limits"),
+      z.literal("final_report"),
+    ]),
+  })
+  .strict();
+
 export const loopSpecLiteSchema = z
   .object({
     schemaVersion: z.literal(LOOP_SPEC_SCHEMA_VERSION),
@@ -158,3 +230,4 @@ export type Requirement = z.infer<typeof requirementSchema>;
 export type DecisionSource = z.infer<typeof decisionSourceSchema>;
 export type TaskType = z.infer<typeof taskTypeSchema>;
 export type SafetyAction = z.infer<typeof safetyActionSchema>;
+export type ContractFoundation = z.infer<typeof contractFoundationSchema>;
