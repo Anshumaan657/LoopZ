@@ -2,7 +2,7 @@
 
 ## Product promise
 
-Turn a messy small-web-project request into a confirmed, verifiable Codex task; assess the evidence returned after execution; and generate a focused repair task when required.
+LoopZ transforms software ideas and development requests into confirmed, verifiable tasks for AI coding agents. It reduces unnecessary token usage and repetitive back-and-forth by translating the user’s intent into a single, detailed, execution-ready prompt for the coding agent to follow. After execution, LoopZ assesses the returned evidence, identifies what is incomplete or incorrect, and generates focused repair instructions when required
 
 ## Primary user
 
