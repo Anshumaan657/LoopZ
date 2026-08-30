@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./intake": "./src/intake.ts",
-    "./loopspec": "./src/loopspec.ts"
+    "./loopspec": "./src/loopspec.ts",
+    "./validation": "./src/validation.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

@@ -156,6 +156,24 @@ export const contractFoundationSchema = z
   })
   .strict();
 
+export const acceptanceContractDraftSchema = contractFoundationSchema
+  .omit({ status: true, pendingSections: true })
+  .extend({
+    status: z.literal("acceptance_draft"),
+    acceptance: z
+      .object({
+        criteria: z.array(acceptanceCriterionSchema).min(1),
+        verificationCommands: z.array(z.string().trim().min(1)).min(1),
+      })
+      .strict(),
+    pendingSections: z.tuple([
+      z.literal("safety"),
+      z.literal("limits"),
+      z.literal("final_report"),
+    ]),
+  })
+  .strict();
+
 export const loopSpecLiteSchema = z
   .object({
     schemaVersion: z.literal(LOOP_SPEC_SCHEMA_VERSION),
@@ -231,3 +249,4 @@ export type DecisionSource = z.infer<typeof decisionSourceSchema>;
 export type TaskType = z.infer<typeof taskTypeSchema>;
 export type SafetyAction = z.infer<typeof safetyActionSchema>;
 export type ContractFoundation = z.infer<typeof contractFoundationSchema>;
+export type AcceptanceContractDraft = z.infer<typeof acceptanceContractDraftSchema>;

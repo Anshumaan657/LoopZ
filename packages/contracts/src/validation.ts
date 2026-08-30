@@ -6,6 +6,8 @@ export const validationIssueCodeSchema = z.enum([
   "duplicate_criterion_id",
   "unknown_requirement_reference",
   "required_requirement_uncovered",
+  "criterion_priority_mismatch",
+  "verification_command_missing",
   "scope_conflict",
   "blocking_decision_unresolved",
   "approval_required",
