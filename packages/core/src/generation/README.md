@@ -12,5 +12,24 @@ Coordinates provider-neutral contract generation from original request, confirme
 - Mark acceptance, safety, limits, and final-report sections as explicitly pending.
 - Produce identical output from identical source state.
 
-The foundation draft is intentionally not executable. Phase 5.2 must add traceable acceptance
-criteria, verification methods, and evidence requirements before it can become LoopSpec Lite.
+## Implemented in Phase 5.2
+
+- Generate stable requirement-linked acceptance criteria.
+- Preserve explicit verification commands and infer reviewable candidates when absent.
+- Define criterion-specific evidence requirements.
+- Validate coverage, references, priority, commands, and evidence.
+
+## Implemented in Phase 5.3
+
+- Detect direct scope conflicts and known clarification contradictions.
+- Classify approval gates, warnings, and blocking safety boundaries.
+- Generate planned actions for destructive, external-service, production/staging, financial,
+  and credential-sensitive work.
+- Require each sensitive action to have an explicit human-approval gate.
+- Preserve a fixed MVP restriction set and source references for findings.
+- Carry Phase 5.2 validation failures forward.
+
+The `safety_draft` remains intentionally non-executable. Contract review must resolve blocking
+findings, inspect heuristic warnings and actions, and confirm approval gates. Later phases add
+limits, final-report requirements, user confirmation, versioning, and persistence before it can
+become LoopSpec Lite.

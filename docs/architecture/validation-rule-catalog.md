@@ -7,11 +7,15 @@ The validator is deterministic and must not call an LLM. Stable issue codes allo
 | `schema_invalid` | Required fields, formats, enums, limits, or strict-object boundaries fail | Zod runtime schema | Block |
 | `duplicate_requirement_id` | Each `REQ-###` ID must be unique | Semantic validator | Block |
 | `duplicate_criterion_id` | Each `AC-###` ID must be unique | Semantic validator | Block |
+| `duplicate_finding_id` | Each `FIND-###` ID must be unique within a safety draft | Semantic validator | Block |
 | `unknown_requirement_reference` | Every criterion requirement reference must identify an existing deliverable | Semantic validator | Block |
 | `required_requirement_uncovered` | Every required deliverable must map to at least one criterion | Semantic validator | Block |
+| `criterion_priority_mismatch` | A criterion priority must match its referenced deliverable | Semantic validator | Block |
+| `verification_command_missing` | An acceptance draft must provide at least one verification command | Semantic validator | Block |
 | `scope_conflict` | Normalized scope text cannot be both included and excluded | Semantic validator | Block |
 | `blocking_decision_unresolved` | Blocking, high-risk, and critical decisions must be resolved | Semantic validator | Block |
 | `approval_required` | Destructive, external-service, production, financial, and credential actions require approval | Semantic validator | Block |
+| `safety_restriction_missing` | Every baseline MVP restriction must remain in a safety draft | Semantic validator | Block |
 
 ## Schema-enforced rules
 

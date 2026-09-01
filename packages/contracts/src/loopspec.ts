@@ -84,6 +84,16 @@ export const safetyActionSchema = z
   })
   .strict();
 
+export const contractFindingSchema = z
+  .object({
+    id: z.string().regex(/^FIND-[0-9]{3}$/),
+    kind: z.enum(["risk", "contradiction", "approval_gate", "safety_boundary"]),
+    severity: z.enum(["warning", "blocking"]),
+    message: z.string().trim().min(1),
+    sourceReferences: z.array(z.string().trim().min(1)).min(1),
+  })
+  .strict();
+
 export const contractInterviewCategorySchema = z.enum([
   "authorization",
   "primary_flow",
@@ -174,6 +184,26 @@ export const acceptanceContractDraftSchema = contractFoundationSchema
   })
   .strict();
 
+export const safetyContractDraftSchema = acceptanceContractDraftSchema
+  .omit({ status: true, pendingSections: true })
+  .extend({
+    status: z.literal("safety_draft"),
+    safety: z
+      .object({
+        restrictedActions: z.array(z.string().trim().min(1)),
+        approvalRequired: z.array(z.string().trim().min(1)),
+        plannedActions: z.array(safetyActionSchema),
+      })
+      .strict(),
+    contractChecks: z
+      .object({
+        findings: z.array(contractFindingSchema),
+      })
+      .strict(),
+    pendingSections: z.tuple([z.literal("limits"), z.literal("final_report")]),
+  })
+  .strict();
+
 export const loopSpecLiteSchema = z
   .object({
     schemaVersion: z.literal(LOOP_SPEC_SCHEMA_VERSION),
@@ -250,3 +280,5 @@ export type TaskType = z.infer<typeof taskTypeSchema>;
 export type SafetyAction = z.infer<typeof safetyActionSchema>;
 export type ContractFoundation = z.infer<typeof contractFoundationSchema>;
 export type AcceptanceContractDraft = z.infer<typeof acceptanceContractDraftSchema>;
+export type ContractFinding = z.infer<typeof contractFindingSchema>;
+export type SafetyContractDraft = z.infer<typeof safetyContractDraftSchema>;
