@@ -1,7 +1,7 @@
 import type {
   ArtifactKind,
   RenderedArtifactMetadata,
-} from "@loopz/contracts";
+} from "@loopz/contracts/artifact";
 
 export type CodexRenderOptions = {
   runId: string;

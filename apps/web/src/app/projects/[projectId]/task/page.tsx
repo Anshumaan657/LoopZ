@@ -1,13 +1,10 @@
-import { StagePage } from "../../../../components/stage-page";
+import { TaskDelivery } from "../../../../features/artifacts/task-delivery";
 
-export default function TaskPage() {
-  return (
-    <StagePage
-      eyebrow="Stage 4 · Agent task"
-      title="Give Codex a contract it can prove."
-      description="This route will provide the copy-ready task, repository artifacts, immutable run metadata, and clear instructions for returning evidence."
-      nextHref="/runs/example/evidence"
-      nextLabel="Preview evidence return"
-    />
-  );
+export default async function TaskPage({ params, searchParams }: {
+  params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ version?: string | string[] }>;
+}) {
+  const [{ projectId }, query] = await Promise.all([params, searchParams]);
+  const requestedVersionId = Array.isArray(query.version) ? query.version[0] : query.version;
+  return <TaskDelivery projectId={projectId} requestedVersionId={requestedVersionId} />;
 }

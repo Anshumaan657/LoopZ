@@ -11,7 +11,7 @@ import {
 } from "./interview";
 import { loopSpecLiteSchema, loopSpecLiteV01Schema } from "./loopspec";
 import { repairTaskSchema } from "./repair";
-import { runSchema } from "./run";
+import { anyRunSchema } from "./run";
 
 function readJson(relativePath: string): unknown {
   return JSON.parse(
@@ -179,7 +179,7 @@ describe("supporting Phase 2 contracts", () => {
       stopWhen: ["The same failure repeats twice"],
     };
 
-    expect(runSchema.safeParse(run).success).toBe(true);
+    expect(anyRunSchema.safeParse(run).success).toBe(true);
     expect(evidenceSubmissionSchema.safeParse(evidence).success).toBe(true);
     expect(assessmentSchema.safeParse(assessment).success).toBe(true);
     expect(repairTaskSchema.safeParse(repair).success).toBe(true);

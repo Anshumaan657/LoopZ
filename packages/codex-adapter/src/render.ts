@@ -1,9 +1,11 @@
 import {
-  providerNeutralTaskSchema,
   type ArtifactKind,
-  type ProviderNeutralTask,
   type RenderedArtifactMetadata,
-} from "@loopz/contracts";
+} from "@loopz/contracts/artifact";
+import {
+  providerNeutralTaskSchema,
+  type ProviderNeutralTask,
+} from "@loopz/contracts/task";
 
 import {
   CODEX_ARTIFACT_FILENAMES,

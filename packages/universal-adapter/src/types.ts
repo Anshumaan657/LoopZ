@@ -1,4 +1,4 @@
-import type { RenderedArtifactMetadata } from "@loopz/contracts";
+import type { RenderedArtifactMetadata } from "@loopz/contracts/artifact";
 
 export type UniversalRenderOptions = {
   runId: string;
