@@ -74,6 +74,20 @@ describe("analyzeIdeaIntake", () => {
     ).toBe(false);
   });
 
+  it("preserves dotted technology names while separating real sentences", () => {
+    const result = analyze(
+      "Add a contact form to an existing Next.js website. Require validation and automated tests.",
+    );
+
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect(result.intent.requestedCapabilities).toEqual([
+      "Add a contact form to an existing Next.js website",
+      "Require validation and automated tests",
+    ]);
+    expect(result.intent.requestedCapabilities).not.toContain("js website");
+  });
+
   it("detects blocking authentication decisions", () => {
     const result = analyze("Build a web app where users can login and manage their account.", {
       projectStatus: "new",

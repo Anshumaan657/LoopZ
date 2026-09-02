@@ -13,6 +13,8 @@ Rough request
 → User returns the final report and evidence
 → LoopZ assesses every acceptance criterion
 → LoopZ generates a bounded repair task when needed
+→ User returns fresh repair evidence
+→ LoopZ completes the run or stops at a defined human-review boundary
 ```
 
 ## MVP boundaries
@@ -87,6 +89,6 @@ web → universal-adapter → contracts
 
 ## Current status
 
-The MVP foundation and Phases 1–8 are implemented. Confirmed versions compile through integrity gates into deterministic provider-neutral tasks, render as Codex-optimized or Universal compatibility prompts, and create a real contract-linked run. Users can return the coding agent's report and execution evidence through a run-specific URL. LoopZ now assesses every criterion conservatively, exposes criterion-to-evidence traceability, detects unsupported claims and contradictions, and preserves user corrections as immutable assessment revisions. See [the implementation roadmap](docs/product/implementation-roadmap.md), [Phase 7.4](docs/architecture/phase-7.4-evidence-persistence-hardening.md), and [Phase 8.4](docs/architecture/phase-8.4-corrections-hardening.md).
+The MVP engineering scope across Phases 1–9 is implemented. Confirmed versions compile through integrity gates into deterministic provider-neutral tasks, render as Codex-optimized or Universal compatibility prompts, and create a contract-linked run. Users can return execution evidence, receive a conservative criterion-level assessment, run up to two focused repair attempts, and finish with an immutable completed or blocked resolution. The repair chain preserves every evidence submission and assessment revision while detecting repeated failures and enforcing human-review boundaries. See [the implementation roadmap](docs/product/implementation-roadmap.md), [Phase 9.2](docs/architecture/phase-9.2-repair-delivery-return.md), [Phase 9.3](docs/architecture/phase-9.3-terminal-resolution.md), and [Phase 9.4](docs/architecture/phase-9.4-release-readiness.md).
 
-Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product-market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. LoopZ assesses submitted evidence but does not independently rerun repositories. The focused repair loop and final MVP release hardening remain Phase 9 work.
+Real participant fieldwork is still an external release dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product or market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. LoopZ assesses submitted evidence but does not independently rerun repositories. Use the [MVP release checklist](docs/validation/MVP_RELEASE_CHECKLIST.md) to record the remaining field and deployment gates.

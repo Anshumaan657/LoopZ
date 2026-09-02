@@ -91,9 +91,12 @@ function inferGoal(prompt: string): string {
     .replace(/[.!?]+$/, "");
 }
 
+function splitPromptSegments(prompt: string): string[] {
+  return prompt.split(/\n+|[!?]+|\.(?=\s|$)/);
+}
+
 function extractCapabilities(prompt: string): string[] {
-  const candidates = prompt
-    .split(/\n+|[.!?]+/)
+  const candidates = splitPromptSegments(prompt)
     .map((part) => part.replace(/^[-*\d.)\s]+/, "").trim())
     .filter((part) => part.length >= 6);
 
@@ -101,8 +104,7 @@ function extractCapabilities(prompt: string): string[] {
 }
 
 function extractConstraints(intake: IdeaIntake): string[] {
-  const promptConstraints = intake.originalPrompt
-    .split(/\n+|[.!?]+/)
+  const promptConstraints = splitPromptSegments(intake.originalPrompt)
     .map((part) => part.trim())
     .filter((part) =>
       /\b(must|only|without|do not|don't|keep|existing stack|use\s+[a-z])\b/i.test(part),

@@ -14,6 +14,6 @@ historical and should not be used to label current commits.
 | 6 | Provider-neutral compilation, agent rendering, task delivery, and hardening |
 | 7 | Execution handoff and evidence return |
 | 8 | Criterion-level evidence assessment |
-| 9 | Focused repair loop, end-to-end validation, and MVP release readiness |
+| 9 | Focused repair loop, terminal resolution, end-to-end validation, and MVP release readiness — implemented |
 
-Real participant fieldwork from Phase 1 continues alongside development and remains a release gate.
+All nine engineering phases are implemented. Real participant fieldwork from Phase 1 continues alongside development and remains a release gate; implementation completion is not a product-validation claim.
