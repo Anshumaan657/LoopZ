@@ -1,4 +1,4 @@
-# LoopSpec Lite 0.1
+# LoopSpec Lite 0.2
 
 LoopSpec Lite is the provider-neutral source of truth for a confirmed LoopZ task. Coding-agent adapters may render it, but they must not add, remove, or reinterpret product requirements.
 
@@ -23,7 +23,7 @@ Every required deliverable has a stable requirement ID. Every acceptance criteri
 - `scope`: included items, exclusions, assumptions, and unresolved decisions
 - `environment`: project status, context, and technology preferences
 - `workflow`: fixed plan, implement, verify, and repair phases
-- `acceptance`: criterion requirements, verification methods, and required evidence
+- `acceptance`: criterion requirements, verification methods, reviewed commands, and required evidence
 - `safety`: restrictions, approval gates, and classified planned actions
 - `limits`: repair budget and stop conditions
 - `finalReport`: mandatory result fields and criterion/evidence references
@@ -59,3 +59,10 @@ A schema-valid LoopSpec is not automatically generation-ready. The deterministic
 - Sensitive planned actions require human approval.
 
 Only a confirmed LoopSpec that passes both schema and semantic validation should be sent to an adapter.
+
+## Version 0.2 correction
+
+Version 0.2 preserves `acceptance.verificationCommands` through confirmation and includes them in the
+content hash. Explicit 0.1 schemas remain available for legacy reads, but old versions must be reviewed
+and reconfirmed because LoopZ will not invent commands that were absent from their confirmed snapshot.
+See [the 0.2 migration note](loopspec-0.2-migration.md).

@@ -14,7 +14,7 @@ function fixture(): SafetyContractDraft {
   });
   const approvalAction = "Call the external profile API";
   return safetyContractDraftSchema.parse({
-    schemaVersion: "0.1",
+    schemaVersion: "0.2",
     status: "safety_draft",
     projectId: "11111111-1111-4111-8111-111111111111",
     compilation: {
@@ -92,6 +92,7 @@ describe("contract confirmation", () => {
     expect(loopSpec.workflow.phases).toEqual(["plan", "implement", "verify", "repair"]);
     expect(loopSpec.objective.goal.confirmedByUser).toBe(true);
     expect(loopSpec.scope.unresolvedDecisions).toEqual([]);
+    expect(loopSpec.acceptance.verificationCommands).toEqual(["npm test"]);
     expect(loopSpec.limits.maximumRepairAttempts).toBe(2);
     expect(loopSpec.finalReport.criterionIdReferencesRequired).toBe(true);
   });
@@ -109,6 +110,7 @@ describe("contract confirmation", () => {
 
     expect(first).toEqual(second);
     expect(first.contractHash).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(first.schemaVersion).toBe("0.2");
     expect(first.approvals[0]).toEqual(expect.objectContaining({
       category: "external_service",
       approvedAt: input.confirmedAt,

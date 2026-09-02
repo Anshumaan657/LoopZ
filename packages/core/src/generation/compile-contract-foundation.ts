@@ -367,7 +367,7 @@ export function compileContractFoundation(input: ContractFoundationInput): Contr
     );
 
   return contractFoundationSchema.parse({
-    schemaVersion: "0.1",
+    schemaVersion: "0.2",
     status: "foundation_draft",
     projectId: input.projectId,
     compilation: {

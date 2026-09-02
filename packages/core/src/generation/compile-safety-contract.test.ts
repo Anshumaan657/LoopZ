@@ -18,7 +18,7 @@ function acceptanceFixture(): AcceptanceContractDraft {
   });
 
   return acceptanceContractDraftSchema.parse({
-    schemaVersion: "0.1",
+    schemaVersion: "0.2",
     status: "acceptance_draft",
     projectId: "11111111-1111-4111-8111-111111111111",
     compilation: {

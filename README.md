@@ -52,6 +52,7 @@ docs/
 ```
 
 The existing project brief and revised roadmap remain at the repository root as source planning documents.
+Current implementation commits use the condensed [nine-phase implementation roadmap](docs/product/implementation-roadmap.md).
 
 ## Development
 
@@ -84,6 +85,6 @@ web → codex-adapter → contracts
 
 ## Current status
 
-The MVP foundation, Phase 1 validation kit, Phase 2 domain contracts, Phase 3 idea intake, Phase 4 clarification, the complete Phase 5 contract workflow, and Phase 6.1 provider-neutral task compiler are implemented. Confirmed versions now compile through hash, semantic, confirmation, and approval-integrity gates into deterministic execution tasks. The usable interface still runs from `/projects/new` through `/projects/:id/contract/confirm`; provider rendering and the task preview remain Phase 6.2–6.3 work. See [Phase 5.4 contract review](docs/architecture/phase-5.4-contract-review.md), [Phase 5.5 confirmation and versioning](docs/architecture/phase-5.5-confirmation-versioning.md), and [Phase 6.1 task compilation](docs/architecture/phase-6.1-provider-neutral-task-compiler.md).
+The MVP foundation, Phase 1 validation kit, Phase 2 domain contracts, Phase 3 idea intake, Phase 4 clarification, the complete Phase 5 contract workflow, and Phase 6.1 provider-neutral task compiler are implemented. LoopSpec 0.2 now preserves reviewed verification commands through confirmation, hashing, and task compilation while explicit 0.1 schemas keep legacy history readable. Confirmed versions compile through hash, semantic, confirmation, and approval-integrity gates into deterministic execution tasks. The usable interface still runs from `/projects/new` through `/projects/:id/contract/confirm`; provider rendering and the task preview remain Phase 6.2–6.3 work. See [the 0.2 migration](docs/architecture/loopspec-0.2-migration.md), [Phase 5.5 confirmation and versioning](docs/architecture/phase-5.5-confirmation-versioning.md), and [Phase 6.1 task compilation](docs/architecture/phase-6.1-provider-neutral-task-compiler.md).
 
 Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product-market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. The task-rendering, evidence-return, assessment, and repair phases remain to be implemented.

@@ -34,7 +34,7 @@ export const contractReviewInputSchema = z
     excludedScope: z.array(editableScopeItemSchema),
     assumptions: z.array(z.string().trim().min(1)),
     criteria: z.array(editableCriterionSchema).min(1),
-    verificationCommands: z.array(z.string().trim().min(1)).min(1),
+    verificationCommands: z.array(z.string().trim().min(1).max(1000)).min(1).max(20),
   })
   .strict();
 

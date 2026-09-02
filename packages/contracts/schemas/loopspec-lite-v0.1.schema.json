@@ -2,6 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "0.1"
+    },
     "request": {
       "type": "object",
       "properties": {
@@ -340,6 +344,22 @@
       ],
       "additionalProperties": false
     },
+    "acceptance": {
+      "type": "object",
+      "properties": {
+        "criteria": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema4"
+          }
+        }
+      },
+      "required": [
+        "criteria"
+      ],
+      "additionalProperties": false
+    },
     "safety": {
       "type": "object",
       "properties": {
@@ -409,7 +429,7 @@
           "minItems": 1,
           "type": "array",
           "items": {
-            "$ref": "#/$defs/__schema4"
+            "$ref": "#/$defs/__schema6"
           }
         }
       },
@@ -426,7 +446,7 @@
           "minItems": 1,
           "type": "array",
           "items": {
-            "$ref": "#/$defs/__schema5"
+            "$ref": "#/$defs/__schema7"
           }
         },
         "criterionIdReferencesRequired": {
@@ -444,48 +464,19 @@
         "evidenceReferencesRequired"
       ],
       "additionalProperties": false
-    },
-    "schemaVersion": {
-      "type": "string",
-      "const": "0.2"
-    },
-    "acceptance": {
-      "type": "object",
-      "properties": {
-        "criteria": {
-          "minItems": 1,
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/__schema6"
-          }
-        },
-        "verificationCommands": {
-          "minItems": 1,
-          "maxItems": 20,
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/__schema8"
-          }
-        }
-      },
-      "required": [
-        "criteria",
-        "verificationCommands"
-      ],
-      "additionalProperties": false
     }
   },
   "required": [
+    "schemaVersion",
     "request",
     "objective",
     "scope",
     "environment",
     "workflow",
+    "acceptance",
     "safety",
     "limits",
-    "finalReport",
-    "schemaVersion",
-    "acceptance"
+    "finalReport"
   ],
   "additionalProperties": false,
   "$defs": {
@@ -613,14 +604,6 @@
       "additionalProperties": false
     },
     "__schema4": {
-      "type": "string",
-      "minLength": 1
-    },
-    "__schema5": {
-      "type": "string",
-      "minLength": 1
-    },
-    "__schema6": {
       "type": "object",
       "properties": {
         "id": {
@@ -646,7 +629,7 @@
           "minItems": 1,
           "type": "array",
           "items": {
-            "$ref": "#/$defs/__schema7"
+            "$ref": "#/$defs/__schema5"
           }
         },
         "priority": {
@@ -667,16 +650,19 @@
       ],
       "additionalProperties": false
     },
-    "__schema7": {
+    "__schema5": {
       "type": "string",
       "minLength": 1
     },
-    "__schema8": {
+    "__schema6": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 1000
+      "minLength": 1
+    },
+    "__schema7": {
+      "type": "string",
+      "minLength": 1
     }
   },
-  "$id": "https://loopz.dev/schemas/loopspec-lite.schema.json",
-  "title": "LoopSpec Lite 0.2"
+  "$id": "https://loopz.dev/schemas/loopspec-lite-v0.1.schema.json",
+  "title": "LoopSpec Lite 0.1 (Legacy)"
 }

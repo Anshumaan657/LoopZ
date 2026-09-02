@@ -33,12 +33,12 @@ It adds only execution metadata and policy:
 The same confirmed version always produces the same task. No timestamp, random identifier, provider
 name, or repository claim is introduced during compilation.
 
-## Verification boundary
+## Verification commands
 
-LoopSpec Lite 0.1 preserves criterion-level verification methods and evidence requirements. The
-Phase 5 acceptance draft's candidate shell-command list is not present in confirmed LoopSpec 0.1,
-so Phase 6.1 does not reconstruct or invent commands. A future additive LoopSpec version may promote
-verified commands according to the schema-versioning policy.
+LoopSpec Lite 0.2 preserves the reviewed command list in addition to criterion-level verification
+methods and evidence requirements. Phase 6.1 carries those commands unchanged inside the canonical
+task. Legacy 0.1 snapshots are not accepted for task generation because reconstructing their missing
+commands would require invention; they must be reviewed and reconfirmed as 0.2.
 
 ## Contract artifact
 

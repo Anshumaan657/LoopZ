@@ -2,9 +2,9 @@ import { z, type ZodType } from "zod";
 
 import { assessmentSchema } from "./assessment.js";
 import { evidenceSubmissionSchema } from "./evidence.js";
-import { loopSpecLiteSchema } from "./loopspec.js";
+import { loopSpecLiteSchema, loopSpecLiteV01Schema } from "./loopspec.js";
 import { repairTaskSchema } from "./repair.js";
-import { providerNeutralTaskSchema } from "./task.js";
+import { providerNeutralTaskSchema, providerNeutralTaskV01Schema } from "./task.js";
 
 type JsonSchemaArtifact = {
   filename: string;
@@ -32,11 +32,27 @@ function createJsonSchema(
 
 export const contractJsonSchemas: JsonSchemaArtifact[] = [
   {
+    filename: "loopspec-lite-v0.1.schema.json",
+    schema: createJsonSchema(
+      loopSpecLiteV01Schema,
+      "loopspec-lite-v0.1.schema.json",
+      "LoopSpec Lite 0.1 (Legacy)",
+    ),
+  },
+  {
     filename: "loopspec-lite.schema.json",
     schema: createJsonSchema(
       loopSpecLiteSchema,
       "loopspec-lite.schema.json",
-      "LoopSpec Lite 0.1",
+      "LoopSpec Lite 0.2",
+    ),
+  },
+  {
+    filename: "provider-neutral-task-v0.1.schema.json",
+    schema: createJsonSchema(
+      providerNeutralTaskV01Schema,
+      "provider-neutral-task-v0.1.schema.json",
+      "Provider-Neutral Execution Task 0.1 (Legacy)",
     ),
   },
   {
@@ -44,7 +60,7 @@ export const contractJsonSchemas: JsonSchemaArtifact[] = [
     schema: createJsonSchema(
       providerNeutralTaskSchema,
       "provider-neutral-task.schema.json",
-      "Provider-Neutral Execution Task 0.1",
+      "Provider-Neutral Execution Task 0.2",
     ),
   },
   {

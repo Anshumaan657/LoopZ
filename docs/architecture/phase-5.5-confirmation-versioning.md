@@ -19,9 +19,10 @@ stores an append-only confirmed version in the browser.
 - Requires a criterion/evidence-linked final report with changed files, verification output,
   blockers, assumptions, approvals, and remaining work.
 
-The acceptance draft's candidate command list is represented by each criterion's reviewed
-verification method in LoopSpec Lite. Future schema work may promote commands to their own confirmed
-LoopSpec field; Phase 5.5 does not silently extend schema version `0.1`.
+LoopSpec 0.2 preserves the acceptance draft's reviewed `verificationCommands` alongside each
+criterion's verification method. The commands are therefore part of the confirmed content hash and
+cannot be edited without creating a new version. Legacy 0.1 versions remain readable but require
+review and reconfirmation before task generation.
 
 ## Approval acknowledgment
 

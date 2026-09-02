@@ -1,10 +1,13 @@
 import { loopSpecLiteSchema, type LoopSpecLite } from "@loopz/contracts/loopspec";
 import {
+  MAX_PROVIDER_NEUTRAL_TASK_CHARACTERS,
   providerNeutralTaskSchema,
   type ProviderNeutralTask,
 } from "@loopz/contracts/task";
 import {
+  anyConfirmedContractVersionSchema,
   confirmedContractVersionSchema,
+  type AnyConfirmedContractVersion,
   type ConfirmedContractVersion,
 } from "@loopz/contracts/versioning";
 
@@ -68,9 +71,15 @@ function requireApprovalIntegrity(version: ConfirmedContractVersion): void {
 }
 
 export async function compileProviderNeutralTask(
-  input: ConfirmedContractVersion,
+  input: AnyConfirmedContractVersion,
 ): Promise<ProviderNeutralTask> {
-  const version = confirmedContractVersionSchema.parse(input);
+  const parsedVersion = anyConfirmedContractVersionSchema.parse(input);
+  if (parsedVersion.schemaVersion === "0.1") {
+    throw new Error(
+      "Legacy LoopSpec 0.1 versions must be reviewed and reconfirmed before task generation.",
+    );
+  }
+  const version = confirmedContractVersionSchema.parse(parsedVersion);
   const spec = loopSpecLiteSchema.parse(version.loopSpec);
   const validation = validateLoopSpec(spec);
   if (!validation.valid) {
@@ -96,8 +105,8 @@ export async function compileProviderNeutralTask(
     .filter((action) => action.requiresApproval)
     .map((action) => ({ ...action, runtimeApprovalStillRequired: true as const }));
 
-  return providerNeutralTaskSchema.parse({
-    schemaVersion: "0.1",
+  const task = providerNeutralTaskSchema.parse({
+    schemaVersion: "0.2",
     kind: "provider_neutral_execution_task",
     taskKey: `task:${version.versionId}:v${version.version}`,
     source: {
@@ -149,4 +158,10 @@ export async function compileProviderNeutralTask(
     },
     runtimeApprovalGates,
   });
+  if (JSON.stringify(task).length > MAX_PROVIDER_NEUTRAL_TASK_CHARACTERS) {
+    throw new Error(
+      `The confirmed task exceeds the ${MAX_PROVIDER_NEUTRAL_TASK_CHARACTERS.toLocaleString("en-US")}-character compilation limit. Reduce the contract scope and reconfirm it.`,
+    );
+  }
+  return task;
 }

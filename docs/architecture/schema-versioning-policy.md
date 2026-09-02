@@ -4,7 +4,8 @@ LoopZ contracts are durable data. Generated tasks, returned evidence, assessment
 
 ## Version fields
 
-- Contract payloads carry a `schemaVersion`, currently `0.1`.
+- Current LoopSpec and confirmed-version payloads carry `schemaVersion: 0.2`; explicit 0.1 schemas are
+  retained for legacy reads.
 - Rendered artifacts carry schema, generator, adapter, and template versions.
 - Run records identify the LoopSpec version used to create the run.
 - Evidence, assessments, and repairs identify their parent records using stable IDs.
@@ -25,6 +26,12 @@ LoopZ contracts are durable data. Generated tasks, returned evidence, assessment
 5. Update adapters and golden outputs explicitly.
 6. Add a migration or document why old records remain read-only.
 7. Release only after old-version behavior remains covered by tests.
+
+## Applied migration: 0.1 to 0.2
+
+LoopSpec 0.2 adds required `acceptance.verificationCommands` so reviewed commands survive confirmation,
+hashing, and task generation. New writes use 0.2. Legacy 0.1 snapshots remain readable but cannot be
+silently upgraded because no command list exists in their confirmed content; users must reconfirm them.
 
 ## Stable identifiers
 

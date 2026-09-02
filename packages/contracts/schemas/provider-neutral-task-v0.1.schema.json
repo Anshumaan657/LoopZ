@@ -4,7 +4,7 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "const": "0.2"
+      "const": "0.1"
     },
     "kind": {
       "type": "string",
@@ -246,6 +246,10 @@
     "contract": {
       "type": "object",
       "properties": {
+        "schemaVersion": {
+          "type": "string",
+          "const": "0.1"
+        },
         "request": {
           "type": "object",
           "properties": {
@@ -584,6 +588,22 @@
           ],
           "additionalProperties": false
         },
+        "acceptance": {
+          "type": "object",
+          "properties": {
+            "criteria": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema8"
+              }
+            }
+          },
+          "required": [
+            "criteria"
+          ],
+          "additionalProperties": false
+        },
         "safety": {
           "type": "object",
           "properties": {
@@ -644,7 +664,7 @@
               "minItems": 1,
               "type": "array",
               "items": {
-                "$ref": "#/$defs/__schema8"
+                "$ref": "#/$defs/__schema10"
               }
             }
           },
@@ -661,7 +681,7 @@
               "minItems": 1,
               "type": "array",
               "items": {
-                "$ref": "#/$defs/__schema9"
+                "$ref": "#/$defs/__schema11"
               }
             },
             "criterionIdReferencesRequired": {
@@ -679,48 +699,19 @@
             "evidenceReferencesRequired"
           ],
           "additionalProperties": false
-        },
-        "schemaVersion": {
-          "type": "string",
-          "const": "0.2"
-        },
-        "acceptance": {
-          "type": "object",
-          "properties": {
-            "criteria": {
-              "minItems": 1,
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/__schema10"
-              }
-            },
-            "verificationCommands": {
-              "minItems": 1,
-              "maxItems": 20,
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/__schema12"
-              }
-            }
-          },
-          "required": [
-            "criteria",
-            "verificationCommands"
-          ],
-          "additionalProperties": false
         }
       },
       "required": [
+        "schemaVersion",
         "request",
         "objective",
         "scope",
         "environment",
         "workflow",
+        "acceptance",
         "safety",
         "limits",
-        "finalReport",
-        "schemaVersion",
-        "acceptance"
+        "finalReport"
       ],
       "additionalProperties": false
     }
@@ -882,14 +873,6 @@
       "additionalProperties": false
     },
     "__schema8": {
-      "type": "string",
-      "minLength": 1
-    },
-    "__schema9": {
-      "type": "string",
-      "minLength": 1
-    },
-    "__schema10": {
       "type": "object",
       "properties": {
         "id": {
@@ -915,7 +898,7 @@
           "minItems": 1,
           "type": "array",
           "items": {
-            "$ref": "#/$defs/__schema11"
+            "$ref": "#/$defs/__schema9"
           }
         },
         "priority": {
@@ -936,16 +919,19 @@
       ],
       "additionalProperties": false
     },
-    "__schema11": {
+    "__schema9": {
       "type": "string",
       "minLength": 1
     },
-    "__schema12": {
+    "__schema10": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 1000
+      "minLength": 1
+    },
+    "__schema11": {
+      "type": "string",
+      "minLength": 1
     }
   },
-  "$id": "https://loopz.dev/schemas/provider-neutral-task.schema.json",
-  "title": "Provider-Neutral Execution Task 0.2"
+  "$id": "https://loopz.dev/schemas/provider-neutral-task-v0.1.schema.json",
+  "title": "Provider-Neutral Execution Task 0.1 (Legacy)"
 }

@@ -26,7 +26,7 @@ describe("renderCodexArtifacts", () => {
     expect(bundle.starterPrompt.filename).toBe("STARTER_PROMPT.md");
     expect(bundle.agentTask.metadata).toMatchObject({
       runId: "run_001",
-      schemaVersion: "0.1",
+      schemaVersion: "0.2",
       kind: "agent_task",
     });
   });

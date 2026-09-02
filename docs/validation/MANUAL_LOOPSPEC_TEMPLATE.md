@@ -2,11 +2,11 @@
 
 **Experiment ID:** `[EXP-###]`  
 **Participant ID:** `[P-###]`  
-**Schema version:** `0.1`  
+**Schema version:** `0.2`
 **Template version:** `phase1-1.0`
 
 ```yaml
-schema_version: "0.1"
+schema_version: "0.2"
 
 request:
   original_prompt: |-
@@ -57,6 +57,8 @@ acceptance:
       required_evidence:
         - "[NAMED EVIDENCE]"
       priority: required
+  verification_commands:
+    - "[EXACT TEST, TYPECHECK, BUILD, OR INSPECTION COMMAND]"
 
 safety:
   restricted_actions:
@@ -98,6 +100,7 @@ final_report:
 - [ ] Every required feature maps to a criterion.
 - [ ] Every criterion has a verification method.
 - [ ] Every criterion has required evidence.
+- [ ] Verification commands are exact, reviewed, and safe to run.
 - [ ] Criterion IDs are unique and stable.
 - [ ] Repair attempts are bounded.
 - [ ] Restricted actions are explicit.

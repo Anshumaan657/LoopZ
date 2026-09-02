@@ -56,7 +56,10 @@ export function compileConfirmedLoopSpec(draftInput: SafetyContractDraft) {
       technologyPreferences: draft.environment.technologyPreferences.map(confirmedDecision),
     },
     workflow: { phases: ["plan", "implement", "verify", "repair"] },
-    acceptance: { criteria: draft.acceptance.criteria },
+    acceptance: {
+      criteria: draft.acceptance.criteria,
+      verificationCommands: draft.acceptance.verificationCommands,
+    },
     safety: draft.safety,
     limits: {
       maximumRepairAttempts: 2,
@@ -116,7 +119,7 @@ export async function confirmContractVersion(input: {
   const actionByName = new Map(draft.safety.plannedActions.map((action) => [action.action, action]));
 
   return confirmedContractVersionSchema.parse({
-    schemaVersion: "0.1",
+    schemaVersion: "0.2",
     versionId: input.versionId,
     projectId: draft.projectId,
     version: input.version,

@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "generate:schemas": "npm run build && node dist/generate-json-schemas.js",
+    "generate:schemas": "vite build --config vite.schema.config.ts && node dist/generate-json-schemas.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/node": "26.2.0",
     "typescript": "7.0.2",
+    "vite": "8.2.2",
     "vitest": "4.1.11"
   }
 }

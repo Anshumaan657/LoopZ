@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import type { ConfirmedContractVersion } from "@loopz/contracts/versioning";
+import type {
+  AnyConfirmedContractVersion,
+  ConfirmedContractVersion,
+} from "@loopz/contracts/versioning";
 import type { SafetyContractDraft } from "@loopz/contracts/loopspec";
 import { confirmContractVersion } from "@loopz/core/confirmation";
 import { validateSafetyContractDraft } from "@loopz/core/generation";
@@ -14,7 +17,7 @@ import styles from "./contract-confirmation.module.css";
 
 type LoadedConfirmation = {
   draft: SafetyContractDraft;
-  versions: ConfirmedContractVersion[];
+  versions: AnyConfirmedContractVersion[];
 };
 
 export function ContractConfirmation({ projectId }: { projectId: string }) {
@@ -182,6 +185,9 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
             <article key={version.versionId}>
               <strong>v{version.version}</strong>
               <span>{new Date(version.confirmedAt).toLocaleString()}</span>
+              {version.schemaVersion === "0.1" ? (
+                <span>Legacy contract — review and reconfirm before task generation</span>
+              ) : null}
               <code>{version.contractHash.slice(0, 23)}…</code>
             </article>
           ))}

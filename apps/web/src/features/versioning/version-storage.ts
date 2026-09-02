@@ -1,5 +1,6 @@
 import {
   confirmedContractVersionListSchema,
+  type AnyConfirmedContractVersion,
   type ConfirmedContractVersion,
 } from "@loopz/contracts/versioning";
 
@@ -7,7 +8,7 @@ export function versionStorageKey(projectId: string): string {
   return `loopz:project:${projectId}:versions`;
 }
 
-export function loadContractVersions(projectId: string): ConfirmedContractVersion[] {
+export function loadContractVersions(projectId: string): AnyConfirmedContractVersion[] {
   const raw = localStorage.getItem(versionStorageKey(projectId));
   if (!raw) return [];
   return confirmedContractVersionListSchema.parse(JSON.parse(raw));
@@ -16,7 +17,7 @@ export function loadContractVersions(projectId: string): ConfirmedContractVersio
 export function appendContractVersion(
   projectId: string,
   version: ConfirmedContractVersion,
-): ConfirmedContractVersion[] {
+): AnyConfirmedContractVersion[] {
   if (version.projectId !== projectId) throw new Error("Version project ID does not match.");
   const versions = loadContractVersions(projectId);
   if (

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1",
+  "schemaVersion": "0.2",
   "request": {
     "originalPrompt": "Build a customer feedback form",
     "taskType": {
@@ -160,7 +160,8 @@
         "requiredEvidence": ["Test names", "Passing test command output"],
         "priority": "required"
       }
-    ]
+    ],
+    "verificationCommands": ["npm test", "npm run build"]
   },
   "safety": {
     "restrictedActions": ["Do not deploy to production", "Do not expose credentials"],

@@ -9,7 +9,7 @@ import {
   extractedUserIntentSchema,
   userAnswerSchema,
 } from "./interview";
-import { loopSpecLiteSchema } from "./loopspec";
+import { loopSpecLiteSchema, loopSpecLiteV01Schema } from "./loopspec";
 import { repairTaskSchema } from "./repair";
 import { runSchema } from "./run";
 
@@ -40,6 +40,38 @@ describe("LoopSpec Lite contracts", () => {
     fixture.providerInstructions = "Use a provider-specific hidden option";
 
     expect(loopSpecLiteSchema.safeParse(fixture).success).toBe(false);
+  });
+
+  it("requires commands in 0.2 while retaining explicit legacy 0.1 parsing", () => {
+    const current = loopSpecLiteSchema.parse(readJson("loopspec/valid-small-web-project.json"));
+    const { verificationCommands: _commands, ...legacyAcceptance } = current.acceptance;
+    const legacy = { ...current, schemaVersion: "0.1", acceptance: legacyAcceptance };
+
+    expect(loopSpecLiteV01Schema.safeParse(legacy).success).toBe(true);
+    expect(loopSpecLiteSchema.safeParse(legacy).success).toBe(false);
+    expect(current.acceptance.verificationCommands).toEqual(["npm test", "npm run build"]);
+  });
+
+  it("bounds the confirmed command section", () => {
+    const missing = readJson("loopspec/valid-small-web-project.json") as {
+      acceptance: Record<string, unknown>;
+    };
+    delete missing.acceptance.verificationCommands;
+    expect(loopSpecLiteSchema.safeParse(missing).success).toBe(false);
+
+    const tooMany = readJson("loopspec/valid-small-web-project.json") as {
+      acceptance: { verificationCommands: string[] };
+    };
+    tooMany.acceptance.verificationCommands = Array.from({ length: 21 }, (_, index) =>
+      `npm run check:${index}`,
+    );
+    expect(loopSpecLiteSchema.safeParse(tooMany).success).toBe(false);
+
+    const tooLong = readJson("loopspec/valid-small-web-project.json") as {
+      acceptance: { verificationCommands: string[] };
+    };
+    tooLong.acceptance.verificationCommands = ["x".repeat(1001)];
+    expect(loopSpecLiteSchema.safeParse(tooLong).success).toBe(false);
   });
 });
 

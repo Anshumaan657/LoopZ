@@ -1,8 +1,13 @@
 import { readFileSync } from "node:fs";
 
-import { loopSpecLiteSchema, type LoopSpecLite } from "@loopz/contracts/loopspec";
+import {
+  loopSpecLiteSchema,
+  loopSpecLiteV01Schema,
+  type LoopSpecLite,
+} from "@loopz/contracts/loopspec";
 import {
   confirmedContractVersionSchema,
+  confirmedContractVersionV01Schema,
   type ConfirmedContractVersion,
 } from "@loopz/contracts/versioning";
 import { describe, expect, it } from "vitest";
@@ -23,7 +28,7 @@ async function confirmedVersion(
   approvals: ConfirmedContractVersion["approvals"] = [],
 ): Promise<ConfirmedContractVersion> {
   return confirmedContractVersionSchema.parse({
-    schemaVersion: "0.1",
+    schemaVersion: "0.2",
     versionId: "22222222-2222-4222-8222-222222222222",
     projectId: "11111111-1111-4111-8111-111111111111",
     version: 1,
@@ -72,6 +77,8 @@ describe("compileProviderNeutralTask", () => {
       "Passing named component test",
       "Test command output",
     ]);
+    expect(task.schemaVersion).toBe("0.2");
+    expect(task.contract.acceptance.verificationCommands).toEqual(["npm test", "npm run build"]);
     expect(task.contract.safety.restrictedActions).toContain("Do not deploy to production");
     expect(task.contract.finalReport.criterionIdReferencesRequired).toBe(true);
   });
@@ -112,6 +119,31 @@ describe("compileProviderNeutralTask", () => {
     );
   });
 
+  it("requires explicit review and reconfirmation for a legacy 0.1 snapshot", async () => {
+    const current = loopSpecFixture();
+    const { verificationCommands: _commands, ...legacyAcceptance } = current.acceptance;
+    const legacySpec = loopSpecLiteV01Schema.parse({
+      ...current,
+      schemaVersion: "0.1",
+      acceptance: legacyAcceptance,
+    });
+    const legacy = confirmedContractVersionV01Schema.parse({
+      schemaVersion: "0.1",
+      versionId: "22222222-2222-4222-8222-222222222222",
+      projectId: "11111111-1111-4111-8111-111111111111",
+      version: 1,
+      confirmedAt: "2026-09-02T10:00:00.000Z",
+      confirmedBy: "user",
+      contractHash: await hashCanonicalValue(legacySpec),
+      approvals: [],
+      loopSpec: legacySpec,
+    });
+
+    await expect(compileProviderNeutralTask(legacy)).rejects.toThrow(
+      "reviewed and reconfirmed",
+    );
+  });
+
   it("rejects missing, unknown, or duplicate approval records", async () => {
     const spec = loopSpecFixture();
     spec.safety.plannedActions.push({
@@ -140,5 +172,15 @@ describe("compileProviderNeutralTask", () => {
       ...approval,
       category: "other",
     }]))).rejects.toThrow("metadata does not match");
+  });
+
+  it("rejects an execution task that exceeds the bounded compilation budget", async () => {
+    const oversized = loopSpecFixture();
+    oversized.request.originalPrompt = "x".repeat(120_000);
+    const version = await confirmedVersion(oversized);
+
+    await expect(compileProviderNeutralTask(version)).rejects.toThrow(
+      "character compilation limit",
+    );
   });
 });

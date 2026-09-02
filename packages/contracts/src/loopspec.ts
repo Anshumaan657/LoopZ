@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const LOOP_SPEC_SCHEMA_VERSION = "0.1" as const;
+export const LOOP_SPEC_LEGACY_SCHEMA_VERSION = "0.1" as const;
+export const LOOP_SPEC_SCHEMA_VERSION = "0.2" as const;
 
 export const decisionSourceSchema = z.enum([
   "user_provided",
@@ -204,9 +205,9 @@ export const safetyContractDraftSchema = acceptanceContractDraftSchema
   })
   .strict();
 
-export const loopSpecLiteSchema = z
+export const loopSpecLiteV01Schema = z
   .object({
-    schemaVersion: z.literal(LOOP_SPEC_SCHEMA_VERSION),
+    schemaVersion: z.literal(LOOP_SPEC_LEGACY_SCHEMA_VERSION),
     request: z
       .object({
         originalPrompt: z.string().trim().min(1),
@@ -272,7 +273,27 @@ export const loopSpecLiteSchema = z
   })
   .strict();
 
+export const loopSpecLiteSchema = loopSpecLiteV01Schema
+  .omit({ schemaVersion: true, acceptance: true })
+  .extend({
+    schemaVersion: z.literal(LOOP_SPEC_SCHEMA_VERSION),
+    acceptance: z
+      .object({
+        criteria: z.array(acceptanceCriterionSchema).min(1),
+        verificationCommands: z.array(z.string().trim().min(1).max(1000)).min(1).max(20),
+      })
+      .strict(),
+  })
+  .strict();
+
+export const anyLoopSpecLiteSchema = z.discriminatedUnion("schemaVersion", [
+  loopSpecLiteV01Schema,
+  loopSpecLiteSchema,
+]);
+
 export type LoopSpecLite = z.infer<typeof loopSpecLiteSchema>;
+export type LoopSpecLiteV01 = z.infer<typeof loopSpecLiteV01Schema>;
+export type AnyLoopSpecLite = z.infer<typeof anyLoopSpecLiteSchema>;
 export type AcceptanceCriterion = z.infer<typeof acceptanceCriterionSchema>;
 export type Requirement = z.infer<typeof requirementSchema>;
 export type DecisionSource = z.infer<typeof decisionSourceSchema>;

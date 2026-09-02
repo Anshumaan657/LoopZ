@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1",
+  "schemaVersion": "0.2",
   "request": {
     "originalPrompt": "Add a feedback form",
     "taskType": {
@@ -93,7 +93,8 @@
         "requiredEvidence": ["Passing integration-test output"],
         "priority": "required"
       }
-    ]
+    ],
+    "verificationCommands": ["npm test"]
   },
   "safety": {
     "restrictedActions": ["Do not deploy"],

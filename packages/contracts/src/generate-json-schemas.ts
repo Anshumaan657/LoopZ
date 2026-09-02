@@ -1,10 +1,11 @@
 import { writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 
 import { contractJsonSchemas } from "./json-schemas.js";
 
 for (const artifact of contractJsonSchemas) {
   writeFileSync(
-    new URL(`../schemas/${artifact.filename}`, import.meta.url),
+    resolve(process.cwd(), "schemas", artifact.filename),
     JSON.stringify(artifact.schema, null, 2) + "\n",
     "utf8",
   );

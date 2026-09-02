@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   confirmedContractVersionSchema,
+  confirmedContractVersionV01Schema,
+  type ConfirmedContractVersionV01,
   type ConfirmedContractVersion,
 } from "@loopz/contracts/versioning";
 
@@ -23,7 +25,7 @@ function versionFixture(version = 1): ConfirmedContractVersion {
     ),
   );
   return confirmedContractVersionSchema.parse({
-    schemaVersion: "0.1",
+    schemaVersion: "0.2",
     versionId:
       version === 1
         ? "22222222-2222-4222-8222-222222222222"
@@ -35,6 +37,22 @@ function versionFixture(version = 1): ConfirmedContractVersion {
     contractHash: `sha256:${String(version).repeat(64)}`,
     approvals: [],
     loopSpec,
+  });
+}
+
+function legacyVersionFixture(): ConfirmedContractVersionV01 {
+  const current = versionFixture(1).loopSpec;
+  const { verificationCommands: _commands, ...legacyAcceptance } = current.acceptance;
+  return confirmedContractVersionV01Schema.parse({
+    schemaVersion: "0.1",
+    versionId: "22222222-2222-4222-8222-222222222222",
+    projectId,
+    version: 1,
+    confirmedAt: "2026-09-01T10:00:00.000Z",
+    confirmedBy: "user",
+    contractHash: `sha256:${"1".repeat(64)}`,
+    approvals: [],
+    loopSpec: { ...current, schemaVersion: "0.1", acceptance: legacyAcceptance },
   });
 }
 
@@ -73,5 +91,14 @@ describe("browser version persistence", () => {
 
     values.set(versionStorageKey(projectId), "not-json");
     expect(() => loadContractVersions(projectId)).toThrow();
+  });
+
+  it("keeps legacy 0.1 history readable while appending a new 0.2 confirmation", () => {
+    values.set(versionStorageKey(projectId), JSON.stringify([legacyVersionFixture()]));
+
+    const versions = appendContractVersion(projectId, versionFixture(2));
+
+    expect(versions.map((item) => item.schemaVersion)).toEqual(["0.1", "0.2"]);
+    expect(versions.map((item) => item.version)).toEqual([1, 2]);
   });
 });

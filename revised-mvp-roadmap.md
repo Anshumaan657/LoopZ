@@ -5,6 +5,10 @@
 **Estimated duration:** 10–12 weeks, including validation and private beta  
 **Working product category:** Verifiable AI development contract builder
 
+> **Numbering note:** This document preserves the original 0–12 planning model. Current implementation
+> commits and architecture notes use the condensed 1–9 map in
+> [`docs/product/implementation-roadmap.md`](docs/product/implementation-roadmap.md).
+
 ---
 
 ## 1. MVP mission
