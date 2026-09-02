@@ -209,6 +209,19 @@ describe("compileSafetyContract", () => {
     ).toBe(false);
   });
 
+  it("deduplicates the same action repeated in deliverable and scope text", () => {
+    const acceptance = acceptanceFixture();
+    acceptance.objective.deliverables[0]!.description = "Delete expired profile data";
+    acceptance.scope.included[0]!.description = "Delete expired profile data";
+
+    const destructive = compileSafetyContract(acceptance).safety.plannedActions.filter(
+      (action) => action.category === "destructive",
+    );
+
+    expect(destructive).toHaveLength(1);
+    expect(destructive[0]?.action).toContain("REQ-001");
+  });
+
   it("retains payment and authentication scope contradictions as review warnings", () => {
     const acceptance = acceptanceFixture();
     acceptance.objective.deliverables[0]!.description = "Payment checkout and authentication login";

@@ -34,7 +34,10 @@ function duplicateValues(values: readonly string[]): string[] {
 function uniqueActions(actions: SafetyAction[]): SafetyAction[] {
   const seen = new Set<string>();
   return actions.filter((action) => {
-    const key = `${action.category}:${normalize(action.action)}`;
+    const describedBehavior = action.action.match(
+      /described by (?:REQ-[0-9]{3}|SCOPE-(?:IN|OUT)-[0-9]{3}): (.+)$/,
+    )?.[1];
+    const key = `${action.category}:${normalize(describedBehavior ?? action.action)}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

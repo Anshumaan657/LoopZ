@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./intake": "./src/interview/analyze-idea-intake.ts",
     "./interview": "./src/interview/create-interview-session.ts",
-    "./generation": "./src/generation/index.ts"
+    "./generation": "./src/generation/index.ts",
+    "./*": "./src/*.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
