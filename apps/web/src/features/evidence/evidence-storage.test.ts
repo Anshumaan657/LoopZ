@@ -77,11 +77,13 @@ describe("evidence persistence", () => {
     values.set(evidenceStorageKey(run.runId), JSON.stringify([submission()]));
     values.set(runStorageKey(run.runId), JSON.stringify(run));
     values.set(taskRunStorageKey(run.projectId, run.contractVersionId), JSON.stringify(run));
+    values.set(`loopz:run:${run.runId}:assessments`, "[]");
     values.set("unrelated", "keep");
     deleteLocalRunAndEvidence(run);
     expect(values.get(evidenceStorageKey(run.runId))).toBeUndefined();
     expect(values.get(runStorageKey(run.runId))).toBeUndefined();
     expect(values.get(taskRunStorageKey(run.projectId, run.contractVersionId))).toBeUndefined();
+    expect(values.get(`loopz:run:${run.runId}:assessments`)).toBeUndefined();
     expect(values.get("unrelated")).toBe("keep");
   });
 

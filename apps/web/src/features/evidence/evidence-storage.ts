@@ -122,6 +122,7 @@ export function persistEvidenceSubmission(
 
 export function deleteLocalRunAndEvidence(run: Run): void {
   localStorage.removeItem(evidenceStorageKey(run.runId));
+  localStorage.removeItem(`loopz:run:${run.runId}:assessments`);
   localStorage.removeItem(runStorageKey(run.runId));
   localStorage.removeItem(taskRunStorageKey(run.projectId, run.contractVersionId));
 }
