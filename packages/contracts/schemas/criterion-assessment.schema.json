@@ -4,19 +4,48 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "const": "0.1"
+      "const": "0.2"
     },
     "assessmentId": {
       "type": "string",
-      "minLength": 1
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "assessmentVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "previousAssessmentId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "runId": {
       "type": "string",
-      "minLength": 1
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "contractVersionId": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "contractHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
     },
     "evidenceSubmissionId": {
       "type": "string",
-      "minLength": 1
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
     },
     "outcome": {
       "type": "string",
@@ -36,6 +65,13 @@
         "$ref": "#/$defs/__schema0"
       }
     },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
     "risks": {
       "type": "array",
       "items": {
@@ -47,20 +83,68 @@
       "type": "string",
       "minLength": 1
     },
+    "corrections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "correctionId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "criterionId": {
+            "$ref": "#/$defs/__schema1"
+          },
+          "previousStatus": {
+            "$ref": "#/$defs/__schema2"
+          },
+          "correctedStatus": {
+            "$ref": "#/$defs/__schema2"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          },
+          "correctedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          }
+        },
+        "required": [
+          "correctionId",
+          "criterionId",
+          "previousStatus",
+          "correctedStatus",
+          "reason",
+          "correctedAt"
+        ],
+        "additionalProperties": false
+      }
+    },
     "assessedAt": {
       "type": "string",
-      "minLength": 1
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     }
   },
   "required": [
     "schemaVersion",
     "assessmentId",
+    "assessmentVersion",
+    "previousAssessmentId",
     "runId",
+    "contractVersionId",
+    "contractHash",
     "evidenceSubmissionId",
     "outcome",
     "criteria",
+    "contradictions",
     "risks",
     "recommendedNextAction",
+    "corrections",
     "assessedAt"
   ],
   "additionalProperties": false,
@@ -69,21 +153,10 @@
       "type": "object",
       "properties": {
         "criterionId": {
-          "type": "string",
-          "pattern": "^AC-[0-9]{3}$"
+          "$ref": "#/$defs/__schema1"
         },
         "status": {
-          "type": "string",
-          "enum": [
-            "verified_by_submitted_evidence",
-            "partially_supported",
-            "unsupported_claim",
-            "failed",
-            "blocked",
-            "not_attempted",
-            "unverifiable",
-            "not_applicable"
-          ]
+          "$ref": "#/$defs/__schema2"
         },
         "evidenceReferences": {
           "type": "array",
@@ -100,6 +173,46 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "claim": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "blocked",
+            "unverified"
+          ]
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "required",
+            "optional"
+          ]
+        },
+        "evidenceStrength": {
+          "type": "string",
+          "enum": [
+            "deterministic",
+            "inspectable",
+            "manual_observation",
+            "agent_assertion",
+            "none"
+          ]
+        },
+        "missingRequiredEvidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "contradictions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         }
       },
       "required": [
@@ -107,11 +220,33 @@
         "status",
         "evidenceReferences",
         "explanation",
-        "confidence"
+        "confidence",
+        "claim",
+        "priority",
+        "evidenceStrength",
+        "missingRequiredEvidence",
+        "contradictions"
       ],
       "additionalProperties": false
+    },
+    "__schema1": {
+      "type": "string",
+      "pattern": "^AC-[0-9]{3}$"
+    },
+    "__schema2": {
+      "type": "string",
+      "enum": [
+        "verified_by_submitted_evidence",
+        "partially_supported",
+        "unsupported_claim",
+        "failed",
+        "blocked",
+        "not_attempted",
+        "unverifiable",
+        "not_applicable"
+      ]
     }
   },
   "$id": "https://loopz.dev/schemas/criterion-assessment.schema.json",
-  "title": "Criterion Assessment 0.1"
+  "title": "Criterion Assessment 0.2"
 }

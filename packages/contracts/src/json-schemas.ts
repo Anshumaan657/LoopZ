@@ -1,6 +1,6 @@
 import { z, type ZodType } from "zod";
 
-import { assessmentSchema } from "./assessment.js";
+import { assessmentSchema, assessmentV01Schema } from "./assessment.js";
 import { evidenceSubmissionSchema, evidenceSubmissionV01Schema } from "./evidence.js";
 import { loopSpecLiteSchema, loopSpecLiteV01Schema } from "./loopspec.js";
 import { repairTaskSchema } from "./repair.js";
@@ -80,11 +80,19 @@ export const contractJsonSchemas: JsonSchemaArtifact[] = [
     ),
   },
   {
+    filename: "criterion-assessment-v0.1.schema.json",
+    schema: createJsonSchema(
+      assessmentV01Schema,
+      "criterion-assessment-v0.1.schema.json",
+      "Criterion Assessment 0.1 (Legacy)",
+    ),
+  },
+  {
     filename: "criterion-assessment.schema.json",
     schema: createJsonSchema(
       assessmentSchema,
       "criterion-assessment.schema.json",
-      "Criterion Assessment 0.1",
+      "Criterion Assessment 0.2",
     ),
   },
   {
