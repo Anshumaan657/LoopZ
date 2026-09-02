@@ -11,6 +11,7 @@ import { compileEvidenceSubmission } from "@loopz/core/evidence";
 
 import { loadTaskRunById } from "../artifacts/task-storage";
 import { loadContractVersions } from "../versioning/version-storage";
+import { deleteRepairHistory } from "../repair/repair-storage";
 import { EvidenceReturnForm } from "./evidence-return-form";
 import { validateEvidenceReturnSize } from "./evidence-limits";
 import {
@@ -25,6 +26,7 @@ type LoadedReturn = {
   run: Run;
   version: ConfirmedContractVersion;
   submission: EvidenceSubmission | null;
+  submissionCount: number;
 };
 
 export function EvidenceReturn({ runId }: { runId: string }) {
@@ -50,17 +52,14 @@ export function EvidenceReturn({ runId }: { runId: string }) {
         selected.loopSpec.acceptance.criteria.map((criterion) => criterion.id),
         submissions,
       );
-      if (run.state === "evidence_submitted" && submissions.length > 0) {
-        setLoaded({ run, version: selected, submission: submissions.at(-1)! });
+      if (["evidence_submitted", "assessed", "repair_generated", "completed", "blocked"].includes(run.state) && submissions.length > 0) {
+        setLoaded({ run, version: selected, submission: submissions.at(-1)!, submissionCount: submissions.length });
         return;
       }
       if (run.state !== "awaiting_evidence") {
         throw new Error(`This run cannot accept evidence while its state is ${run.state}.`);
       }
-      if (submissions.length > 0) {
-        throw new Error("Evidence history exists but the run state is inconsistent.");
-      }
-      setLoaded({ run, version: selected, submission: null });
+      setLoaded({ run, version: selected, submission: null, submissionCount: submissions.length });
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Evidence return could not be loaded.");
     }
@@ -80,7 +79,7 @@ export function EvidenceReturn({ runId }: { runId: string }) {
         submittedAt,
       });
       const saved = persistEvidenceSubmission(loaded.run, submission, submittedAt);
-      setLoaded({ ...loaded, run: saved.run, submission });
+      setLoaded({ ...loaded, run: saved.run, submission, submissionCount: saved.submissions.length });
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "The evidence could not be submitted.";
       setError(message);
@@ -95,6 +94,7 @@ export function EvidenceReturn({ runId }: { runId: string }) {
     );
     if (!confirmed) return;
     deleteLocalRunAndEvidence(loaded.run);
+    deleteRepairHistory(loaded.run.runId);
     router.push(`/projects/${loaded.run.projectId}/task?version=${loaded.run.contractVersionId}`);
   }
 
@@ -108,9 +108,10 @@ export function EvidenceReturn({ runId }: { runId: string }) {
         <section className={styles.complete} aria-live="polite">
           <span className="status-pill">Evidence submitted</span>
           <h1>The execution return is safely linked.</h1>
-          <p>
-            LoopZ preserved {loaded.submission.evidenceItems.length} evidence items across {loaded.submission.criteria.length} acceptance criteria. Claims have not yet been verified.
-          </p>
+           <p>
+             LoopZ preserved submission {loaded.submissionCount} with {loaded.submission.evidenceItems.length} evidence items across {loaded.submission.criteria.length} acceptance criteria.
+             Claims have not yet been verified; continue to assessment to check the returned proof against the confirmed contract.
+           </p>
           <dl>
             <div><dt>Run ID</dt><dd><code>{loaded.run.runId}</code></dd></div>
             <div><dt>Submission ID</dt><dd><code>{loaded.submission.submissionId}</code></dd></div>
@@ -135,11 +136,11 @@ export function EvidenceReturn({ runId }: { runId: string }) {
     <main className={styles.page}>
       <nav className={styles.nav} aria-label="Evidence return navigation">
         <Link href="/">LoopZ</Link>
-        <Link href={`/projects/${loaded.run.projectId}/task?version=${loaded.run.contractVersionId}`}>Back to task</Link>
+        <Link href={loaded.run.repairAttempts > 0 ? `/runs/${loaded.run.runId}/repair` : `/projects/${loaded.run.projectId}/task?version=${loaded.run.contractVersionId}`}>{loaded.run.repairAttempts > 0 ? "Back to repair" : "Back to task"}</Link>
       </nav>
       <header className={styles.header}>
-        <p className="eyebrow">Phase 7 · Evidence return</p>
-        <h1>Show what the agent actually produced.</h1>
+        <p className="eyebrow">{loaded.run.repairAttempts > 0 ? `Phase 9 · Repair evidence ${loaded.run.repairAttempts}` : "Phase 7 · Evidence return"}</p>
+        <h1>{loaded.run.repairAttempts > 0 ? "Show what changed after the repair." : "Show what the agent actually produced."}</h1>
         <p>
           Paste original outputs. LoopZ will preserve claims separately from evidence and assess them against the confirmed contract next.
         </p>
