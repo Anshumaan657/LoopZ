@@ -28,6 +28,7 @@ Completed ─ or ─ focused repair task
 | `/projects/new` | Capture the rough request |
 | `/projects/:id/interview` | Ask risk-based questions |
 | `/projects/:id/contract` | Confirm scope and acceptance criteria |
+| `/projects/:id/contract/confirm` | Acknowledge approval gates and create a confirmed version |
 | `/projects/:id/task` | Copy/download the generated task |
 | `/runs/:id/evidence` | Return agent output and evidence |
 | `/runs/:id/assessment` | Review status and generate repair task |

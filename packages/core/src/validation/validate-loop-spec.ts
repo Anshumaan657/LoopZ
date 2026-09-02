@@ -1,8 +1,5 @@
-import {
-  loopSpecLiteSchema,
-  type LoopSpecLite,
-  type ValidationIssue,
-} from "@loopz/contracts";
+import { loopSpecLiteSchema, type LoopSpecLite } from "@loopz/contracts/loopspec";
+import type { ValidationIssue } from "@loopz/contracts/validation";
 
 export type LoopSpecValidation =
   | { valid: true; value: LoopSpecLite; issues: [] }
