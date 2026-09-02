@@ -8,7 +8,7 @@ LoopZ turns a rough software request into a verifiable development contract for 
 Rough request
 → Risk-based clarification
 → Confirmed scope and acceptance criteria
-→ Codex-ready task and repository artifacts
+→ Codex-optimized or Universal compatibility task and repository artifacts
 → User runs the task outside LoopZ
 → User returns the final report and evidence
 → LoopZ assesses every acceptance criterion
@@ -39,6 +39,7 @@ packages/
   contracts/           Versioned schemas and shared domain types
   core/                Provider-neutral interview, validation, evidence, and repair logic
   codex-adapter/        Codex-specific artifact and task rendering
+  universal-adapter/    Provider-neutral compatibility task rendering
 tests/
   fixtures/            Stable valid and invalid contract/evidence examples
   evals/               Raw-prompt versus LoopZ benchmark cases
@@ -81,10 +82,11 @@ The web application may depend on the domain packages. Provider-neutral packages
 ```text
 web → core → contracts
 web → codex-adapter → contracts
+web → universal-adapter → contracts
 ```
 
 ## Current status
 
-The MVP foundation, Phase 1 validation kit, Phase 2 domain contracts, Phase 3 idea intake, Phase 4 clarification, the complete Phase 5 contract workflow, and Phase 6.1 provider-neutral task compiler are implemented. LoopSpec 0.2 now preserves reviewed verification commands through confirmation, hashing, and task compilation while explicit 0.1 schemas keep legacy history readable. Confirmed versions compile through hash, semantic, confirmation, and approval-integrity gates into deterministic execution tasks. The usable interface still runs from `/projects/new` through `/projects/:id/contract/confirm`; provider rendering and the task preview remain Phase 6.2–6.3 work. See [the 0.2 migration](docs/architecture/loopspec-0.2-migration.md), [Phase 5.5 confirmation and versioning](docs/architecture/phase-5.5-confirmation-versioning.md), and [Phase 6.1 task compilation](docs/architecture/phase-6.1-provider-neutral-task-compiler.md).
+The MVP foundation, Phase 1 validation kit, Phase 2 domain contracts, Phase 3 idea intake, Phase 4 clarification, the complete Phase 5 contract workflow, and Phase 6.1–6.2 task compilation and rendering are implemented. LoopSpec 0.2 preserves reviewed verification commands through confirmation, hashing, compilation, and both delivery formats. Confirmed versions compile through integrity gates into deterministic provider-neutral tasks, then render as a Codex-optimized package or a clearly labelled Universal compatibility prompt. The usable interface still runs from `/projects/new` through `/projects/:id/contract/confirm`; connecting these renderers to a real run and task-delivery UI remains Phase 6.3 work. See [Phase 6.1](docs/architecture/phase-6.1-provider-neutral-task-compiler.md) and [Phase 6.2](docs/architecture/phase-6.2-dual-task-renderers.md).
 
-Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product-market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. The task-rendering, evidence-return, assessment, and repair phases remain to be implemented.
+Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product-market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. The task-delivery UI, evidence-return, assessment, and repair phases remain to be implemented.

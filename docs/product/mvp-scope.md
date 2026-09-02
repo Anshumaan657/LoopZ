@@ -13,7 +13,7 @@ Freelancers and technical indie builders who already know how to run a coding ag
 1. Submit rough request.
 2. Answer up to five risk-based questions.
 3. Confirm goal, scope, assumptions, and acceptance criteria.
-4. Generate one Codex-ready task and repository artifacts.
+4. Generate a Codex-optimized task or a Universal compatibility task and repository artifacts.
 5. Run the task outside LoopZ.
 6. Return the final report and evidence.
 7. Receive criterion-level assessment.

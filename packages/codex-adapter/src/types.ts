@@ -24,6 +24,8 @@ export type CodexArtifactBundle = {
   starterPrompt: CodexArtifact;
 };
 
+export const CODEX_OUTPUT_FORMAT = "codex" as const;
+
 export const CODEX_ARTIFACT_FILENAMES: Record<ArtifactKind, string> = {
   project_spec: "PROJECT_SPEC.md",
   acceptance_criteria: "ACCEPTANCE_CRITERIA.md",

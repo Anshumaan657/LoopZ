@@ -9,14 +9,15 @@ LoopZ must evolve its web experience, provider-neutral contract format, determin
 
 ## Decision
 
-Use npm workspaces with four initial units:
+Use npm workspaces with five units:
 
 - `apps/web`
 - `packages/contracts`
 - `packages/core`
 - `packages/codex-adapter`
+- `packages/universal-adapter`
 
-`contracts` owns versioned data shapes. `core` owns provider-neutral rules. `codex-adapter` renders Codex-specific artifacts. `web` owns delivery and persistence.
+`contracts` owns versioned data shapes. `core` owns provider-neutral rules. `codex-adapter` renders Codex-optimized artifacts. `universal-adapter` renders a provider-neutral compatibility task without claiming dedicated agent support. `web` owns delivery and persistence.
 
 ## Consequences
 

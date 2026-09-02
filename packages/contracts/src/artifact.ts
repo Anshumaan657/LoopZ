@@ -7,11 +7,14 @@ export const artifactKindSchema = z.enum([
   "starter_prompt",
 ]);
 
+export const artifactOutputFormatSchema = z.enum(["codex", "universal"]);
+
 export const renderedArtifactMetadataSchema = z
   .object({
     artifactId: z.string().min(1),
     runId: z.string().min(1),
     kind: artifactKindSchema,
+    outputFormat: artifactOutputFormatSchema,
     schemaVersion: z.string().min(1),
     generatorVersion: z.string().min(1),
     adapterVersion: z.string().min(1),
@@ -21,6 +24,7 @@ export const renderedArtifactMetadataSchema = z
   .strict();
 
 export type ArtifactKind = z.infer<typeof artifactKindSchema>;
+export type ArtifactOutputFormat = z.infer<typeof artifactOutputFormatSchema>;
 export type RenderedArtifactMetadata = z.infer<
   typeof renderedArtifactMetadataSchema
 >;
