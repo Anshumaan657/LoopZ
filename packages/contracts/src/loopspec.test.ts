@@ -10,7 +10,7 @@ import {
   userAnswerSchema,
 } from "./interview";
 import { loopSpecLiteSchema, loopSpecLiteV01Schema } from "./loopspec";
-import { repairTaskSchema } from "./repair";
+import { anyRepairTaskSchema } from "./repair";
 import { anyRunSchema } from "./run";
 
 function readJson(relativePath: string): unknown {
@@ -182,6 +182,6 @@ describe("supporting Phase 2 contracts", () => {
     expect(anyRunSchema.safeParse(run).success).toBe(true);
     expect(anyEvidenceSubmissionSchema.safeParse(evidence).success).toBe(true);
     expect(anyAssessmentSchema.safeParse(assessment).success).toBe(true);
-    expect(repairTaskSchema.safeParse(repair).success).toBe(true);
+    expect(anyRepairTaskSchema.safeParse(repair).success).toBe(true);
   });
 });

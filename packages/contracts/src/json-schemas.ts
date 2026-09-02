@@ -3,7 +3,7 @@ import { z, type ZodType } from "zod";
 import { assessmentSchema, assessmentV01Schema } from "./assessment.js";
 import { evidenceSubmissionSchema, evidenceSubmissionV01Schema } from "./evidence.js";
 import { loopSpecLiteSchema, loopSpecLiteV01Schema } from "./loopspec.js";
-import { repairTaskSchema } from "./repair.js";
+import { repairTaskSchema, repairTaskV01Schema } from "./repair.js";
 import { providerNeutralTaskSchema, providerNeutralTaskV01Schema } from "./task.js";
 
 type JsonSchemaArtifact = {
@@ -96,11 +96,19 @@ export const contractJsonSchemas: JsonSchemaArtifact[] = [
     ),
   },
   {
+    filename: "repair-task-v0.1.schema.json",
+    schema: createJsonSchema(
+      repairTaskV01Schema,
+      "repair-task-v0.1.schema.json",
+      "Repair Task 0.1 (Legacy)",
+    ),
+  },
+  {
     filename: "repair-task.schema.json",
     schema: createJsonSchema(
       repairTaskSchema,
       "repair-task.schema.json",
-      "Repair Task 0.1",
+      "Repair Task 0.2",
     ),
   },
 ];
