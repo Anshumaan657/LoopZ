@@ -1,7 +1,7 @@
 import { z, type ZodType } from "zod";
 
 import { assessmentSchema } from "./assessment.js";
-import { evidenceSubmissionSchema } from "./evidence.js";
+import { evidenceSubmissionSchema, evidenceSubmissionV01Schema } from "./evidence.js";
 import { loopSpecLiteSchema, loopSpecLiteV01Schema } from "./loopspec.js";
 import { repairTaskSchema } from "./repair.js";
 import { providerNeutralTaskSchema, providerNeutralTaskV01Schema } from "./task.js";
@@ -64,11 +64,19 @@ export const contractJsonSchemas: JsonSchemaArtifact[] = [
     ),
   },
   {
+    filename: "evidence-submission-v0.1.schema.json",
+    schema: createJsonSchema(
+      evidenceSubmissionV01Schema,
+      "evidence-submission-v0.1.schema.json",
+      "Evidence Submission 0.1 (Legacy)",
+    ),
+  },
+  {
     filename: "evidence-submission.schema.json",
     schema: createJsonSchema(
       evidenceSubmissionSchema,
       "evidence-submission.schema.json",
-      "Evidence Submission 0.1",
+      "Evidence Submission 0.2",
     ),
   },
   {

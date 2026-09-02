@@ -22,7 +22,8 @@ Implemented Phase 2 contracts:
 - Provider-neutral execution tasks linked to confirmed contract versions
 - Stable validation issues
 
-Current LoopSpec, confirmed-version, and provider-neutral-task writes use 0.2 so reviewed verification
-commands remain inside the hashed contract. Explicit 0.1 schemas remain available for legacy reads.
+Current LoopSpec, confirmed-version, provider-neutral-task, and evidence-submission writes use 0.2.
+Reviewed verification commands remain inside the hashed contract, and returned evidence is tied to
+that immutable contract identity. Explicit 0.1 schemas remain available for legacy reads.
 
 See `docs/architecture/loopspec-lite.md`, `validation-rule-catalog.md`, and `schema-versioning-policy.md` for the contract rules.

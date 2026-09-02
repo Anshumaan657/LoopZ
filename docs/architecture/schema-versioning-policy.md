@@ -33,6 +33,10 @@ LoopSpec 0.2 adds required `acceptance.verificationCommands` so reviewed command
 hashing, and task generation. New writes use 0.2. Legacy 0.1 snapshots remain readable but cannot be
 silently upgraded because no command list exists in their confirmed content; users must reconfirm them.
 
+Evidence Submission 0.2 adds UUID run and submission identity, immutable contract-version identity,
+coding-agent attribution, and bounded criterion claim states. New returns use 0.2. Legacy 0.1 evidence
+remains readable through its explicit schema and is not silently rewritten.
+
 ## Stable identifiers
 
 Requirement, criterion, evidence, assessment, and repair IDs must not be reused for a different meaning. Once a run is created, changing a requirement or criterion creates a new LoopSpec version rather than mutating the historical contract.

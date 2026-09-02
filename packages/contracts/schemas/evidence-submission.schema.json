@@ -4,17 +4,33 @@
   "properties": {
     "schemaVersion": {
       "type": "string",
-      "const": "0.1"
+      "const": "0.2"
     },
     "submissionId": {
       "type": "string",
-      "minLength": 1
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
     },
     "runId": {
       "type": "string",
-      "minLength": 1
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "contractVersionId": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+    },
+    "contractHash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
     },
     "submittedAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "codingAgent": {
       "type": "string",
       "minLength": 1
     },
@@ -23,45 +39,17 @@
       "minLength": 1
     },
     "evidenceItems": {
+      "minItems": 1,
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "$ref": "#/$defs/__schema0"
-          },
-          "type": {
-            "$ref": "#/$defs/__schema1"
-          },
-          "description": {
-            "$ref": "#/$defs/__schema2"
-          },
-          "content": {
-            "$ref": "#/$defs/__schema3"
-          },
-          "uri": {
-            "$ref": "#/$defs/__schema4"
-          },
-          "command": {
-            "$ref": "#/$defs/__schema5"
-          },
-          "exitCode": {
-            "$ref": "#/$defs/__schema6"
-          }
-        },
-        "required": [
-          "id",
-          "type",
-          "description"
-        ],
-        "additionalProperties": false
+        "$ref": "#/$defs/__schema0"
       }
     },
     "criteria": {
       "minItems": 1,
       "type": "array",
       "items": {
-        "$ref": "#/$defs/__schema7"
+        "$ref": "#/$defs/__schema8"
       }
     },
     "userNotes": {
@@ -72,7 +60,10 @@
     "schemaVersion",
     "submissionId",
     "runId",
+    "contractVersionId",
+    "contractHash",
     "submittedAt",
+    "codingAgent",
     "finalReport",
     "evidenceItems",
     "criteria",
@@ -81,10 +72,42 @@
   "additionalProperties": false,
   "$defs": {
     "__schema0": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/__schema1"
+        },
+        "type": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "description": {
+          "$ref": "#/$defs/__schema3"
+        },
+        "content": {
+          "$ref": "#/$defs/__schema4"
+        },
+        "uri": {
+          "$ref": "#/$defs/__schema5"
+        },
+        "command": {
+          "$ref": "#/$defs/__schema6"
+        },
+        "exitCode": {
+          "$ref": "#/$defs/__schema7"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "__schema1": {
       "type": "string",
       "pattern": "^EV-[0-9]{3}$"
     },
-    "__schema1": {
+    "__schema2": {
       "type": "string",
       "enum": [
         "command_output",
@@ -95,10 +118,6 @@
         "agent_report",
         "user_observation"
       ]
-    },
-    "__schema2": {
-      "type": "string",
-      "minLength": 1
     },
     "__schema3": {
       "type": "string",
@@ -113,11 +132,15 @@
       "minLength": 1
     },
     "__schema6": {
+      "type": "string",
+      "minLength": 1
+    },
+    "__schema7": {
       "type": "integer",
       "minimum": -9007199254740991,
       "maximum": 9007199254740991
     },
-    "__schema7": {
+    "__schema8": {
       "type": "object",
       "properties": {
         "criterionId": {
@@ -126,12 +149,17 @@
         },
         "claim": {
           "type": "string",
-          "minLength": 1
+          "enum": [
+            "passed",
+            "failed",
+            "blocked",
+            "unverified"
+          ]
         },
         "evidenceIds": {
           "type": "array",
           "items": {
-            "$ref": "#/$defs/__schema0"
+            "$ref": "#/$defs/__schema1"
           }
         }
       },
@@ -144,5 +172,5 @@
     }
   },
   "$id": "https://loopz.dev/schemas/evidence-submission.schema.json",
-  "title": "Evidence Submission 0.1"
+  "title": "Evidence Submission 0.2"
 }

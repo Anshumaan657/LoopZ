@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import { assessmentSchema } from "./assessment";
-import { evidenceSubmissionSchema } from "./evidence";
+import { anyEvidenceSubmissionSchema } from "./evidence";
 import {
   clarificationQuestionSchema,
   extractedUserIntentSchema,
@@ -180,7 +180,7 @@ describe("supporting Phase 2 contracts", () => {
     };
 
     expect(anyRunSchema.safeParse(run).success).toBe(true);
-    expect(evidenceSubmissionSchema.safeParse(evidence).success).toBe(true);
+    expect(anyEvidenceSubmissionSchema.safeParse(evidence).success).toBe(true);
     expect(assessmentSchema.safeParse(assessment).success).toBe(true);
     expect(repairTaskSchema.safeParse(repair).success).toBe(true);
   });
