@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type KeyboardEvent } from "react";
 
 import { renderCodexArtifacts, type CodexArtifactBundle } from "@loopz/codex-adapter";
@@ -16,6 +17,7 @@ import {
 import { loadContractVersions } from "../versioning/version-storage";
 import { copyExactTask, downloadExactTask } from "./task-actions";
 import {
+  beginEvidenceReturn,
   markTaskCopied,
   prepareTaskRun,
   saveTaskRun,
@@ -37,6 +39,7 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
   projectId: string;
   requestedVersionId?: string;
 }) {
+  const router = useRouter();
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -141,6 +144,22 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
     }
   }
 
+  function returnEvidence() {
+    if (!delivery) return;
+    setError(null);
+    try {
+      if (delivery.run.state === "evidence_submitted") {
+        router.push(`/runs/${delivery.run.runId}/evidence`);
+        return;
+      }
+      const run = beginEvidenceReturn(delivery.run, new Date().toISOString());
+      setDelivery({ ...delivery, run });
+      router.push(`/runs/${run.runId}/evidence`);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Evidence return could not be started.");
+    }
+  }
+
   if (error && !delivery) return <DeliveryState projectId={projectId} message={error} />;
   if (!delivery || !selectedArtifact) return <DeliveryState projectId={projectId} message="Generating the confirmed task…" />;
 
@@ -234,7 +253,22 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
       <section className={styles.next}>
         <p className="eyebrow">What happens next</p>
         <h2>Run it outside LoopZ.</h2>
-        <p>Paste the exact task into your chosen coding agent. Evidence return becomes available in Phase 7.</p>
+        <p>
+          Paste the exact task into your coding agent. When it finishes, return its final report,
+          command output, and file-change summary here.
+        </p>
+        <button
+          className="button"
+          disabled={delivery.run.state === "task_generated"}
+          onClick={returnEvidence}
+          type="button"
+        >
+          {delivery.run.state === "task_generated"
+            ? "Copy or download the task first"
+            : delivery.run.state === "evidence_submitted"
+              ? "View submitted evidence"
+              : "Return execution evidence"}
+        </button>
       </section>
     </main>
   );

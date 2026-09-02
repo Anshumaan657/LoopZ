@@ -4,8 +4,11 @@ import { confirmedContractVersionSchema, type ConfirmedContractVersion } from "@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  beginEvidenceReturn,
+  loadTaskRunById,
   markTaskCopied,
   prepareTaskRun,
+  runStorageKey,
   saveTaskRun,
   selectTaskOutput,
   taskRunStorageKey,
@@ -69,6 +72,35 @@ describe("task run persistence", () => {
 
     expect(copied).toMatchObject({ selectedOutputFormat: "universal", state: "copied" });
     expect(JSON.parse(values.get(taskRunStorageKey(projectId, versionId))!)).toEqual(copied);
+    expect(loadTaskRunById(copied.runId)).toEqual(copied);
+  });
+
+  it("starts evidence return only from a copied run and remains idempotent", () => {
+    const run = saveTaskRun(prepareTaskRun(versionFixture(), {
+      runId: "33333333-3333-4333-8333-333333333333",
+      generatedAt: "2026-09-02T11:00:00.000Z",
+    }).run);
+    expect(() => beginEvidenceReturn(run, "2026-09-02T11:01:00.000Z")).toThrow(
+      "Copy or download",
+    );
+    const copied = markTaskCopied(run, "2026-09-02T11:02:00.000Z");
+    const awaiting = beginEvidenceReturn(copied, "2026-09-02T11:03:00.000Z");
+    expect(awaiting.state).toBe("awaiting_evidence");
+    expect(markTaskCopied(awaiting, "2026-09-02T11:03:30.000Z")).toEqual(awaiting);
+    expect(beginEvidenceReturn(awaiting, "2026-09-02T11:04:00.000Z")).toEqual(awaiting);
+    expect(JSON.parse(values.get(runStorageKey(run.runId))!)).toEqual(awaiting);
+  });
+
+  it("rejects an unknown or mismatched run return URL", () => {
+    expect(() => loadTaskRunById("33333333-3333-4333-8333-333333333333")).toThrow("not found");
+    const run = saveTaskRun(prepareTaskRun(versionFixture(), {
+      runId: "33333333-3333-4333-8333-333333333333",
+      generatedAt: "2026-09-02T11:00:00.000Z",
+    }).run);
+    values.set(runStorageKey("44444444-4444-4444-8444-444444444444"), JSON.stringify(run));
+    expect(() => loadTaskRunById("44444444-4444-4444-8444-444444444444")).toThrow(
+      "does not match",
+    );
   });
 
   it("rejects corrupted or mismatched saved run data", () => {

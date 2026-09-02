@@ -5,6 +5,10 @@ export function taskRunStorageKey(projectId: string, contractVersionId: string):
   return `loopz:project:${projectId}:contract:${contractVersionId}:run`;
 }
 
+export function runStorageKey(runId: string): string {
+  return `loopz:run:${runId}`;
+}
+
 function requireMatchingRun(run: Run, version: ConfirmedContractVersion): void {
   if (
     run.projectId !== version.projectId ||
@@ -23,7 +27,16 @@ export function saveTaskRun(run: Run): Run {
     taskRunStorageKey(parsed.projectId, parsed.contractVersionId),
     JSON.stringify(parsed),
   );
+  localStorage.setItem(runStorageKey(parsed.runId), JSON.stringify(parsed));
   return parsed;
+}
+
+export function loadTaskRunById(runId: string): Run {
+  const raw = localStorage.getItem(runStorageKey(runId));
+  if (!raw) throw new Error("This run was not found in this browser.");
+  const run = runSchema.parse(JSON.parse(raw));
+  if (run.runId !== runId) throw new Error("The saved run ID does not match this URL.");
+  return run;
 }
 
 export function prepareTaskRun(
@@ -60,8 +73,19 @@ export function selectTaskOutput(run: Run, selectedOutputFormat: Run["selectedOu
 }
 
 export function markTaskCopied(run: Run, now: string): Run {
-  if (run.state !== "task_generated" && run.state !== "copied") {
+  if (["copied", "awaiting_evidence", "evidence_submitted", "assessed", "repair_generated", "completed", "blocked"].includes(run.state)) {
+    return run;
+  }
+  if (run.state !== "task_generated") {
     throw new Error(`A task in the ${run.state} state cannot be marked as copied.`);
   }
   return saveTaskRun({ ...run, state: "copied", updatedAt: now });
+}
+
+export function beginEvidenceReturn(run: Run, now: string): Run {
+  if (run.state === "awaiting_evidence") return run;
+  if (run.state !== "copied") {
+    throw new Error("Copy or download the task before returning execution evidence.");
+  }
+  return saveTaskRun({ ...run, state: "awaiting_evidence", updatedAt: now });
 }
