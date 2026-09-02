@@ -36,6 +36,8 @@ type CompileAssessmentInput = {
   submission: EvidenceSubmission;
   assessmentId: string;
   assessedAt: string;
+  assessmentVersion?: number;
+  previousAssessmentId?: string | null;
 };
 
 type ApplyCorrectionInput = {
@@ -293,8 +295,8 @@ export async function compileAssessment(input: CompileAssessmentInput): Promise<
   return assessmentSchema.parse({
     schemaVersion: "0.2",
     assessmentId: input.assessmentId,
-    assessmentVersion: 1,
-    previousAssessmentId: null,
+    assessmentVersion: input.assessmentVersion ?? 1,
+    previousAssessmentId: input.previousAssessmentId ?? null,
     runId: run.runId,
     contractVersionId: version.versionId,
     contractHash: version.contractHash,

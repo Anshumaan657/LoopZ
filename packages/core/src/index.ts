@@ -7,5 +7,6 @@ export * from "./evidence/compile-evidence-submission";
 export * from "./assessment/compile-assessment";
 export * from "./repair/compile-repair-task";
 export * from "./runs/transitions";
+export * from "./runs/resolve-run";
 export * from "./task/compile-provider-neutral-task";
 export * from "./validation/validate-loop-spec";

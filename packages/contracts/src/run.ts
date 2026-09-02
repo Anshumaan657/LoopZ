@@ -53,7 +53,30 @@ export const runSchema = z
 
 export const anyRunSchema = z.discriminatedUnion("schemaVersion", [runV01Schema, runSchema]);
 
+export const runResolutionReasonSchema = z.enum([
+  "completion_supported",
+  "human_input_required",
+  "unsafe_or_out_of_scope",
+  "repair_limit_reached",
+  "no_progress",
+]);
+
+export const runResolutionSchema = z.object({
+  schemaVersion: z.literal("0.1"),
+  resolutionId: z.string().uuid(),
+  runId: z.string().uuid(),
+  assessmentId: z.string().uuid(),
+  contractVersionId: z.string().uuid(),
+  contractHash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+  state: z.enum(["completed", "blocked"]),
+  reason: runResolutionReasonSchema,
+  explanation: z.string().trim().min(1),
+  resolvedAt: z.string().datetime(),
+}).strict();
+
 export type RunState = z.infer<typeof runStateSchema>;
 export type Run = z.infer<typeof runSchema>;
 export type RunV01 = z.infer<typeof runV01Schema>;
 export type AnyRun = z.infer<typeof anyRunSchema>;
+export type RunResolution = z.infer<typeof runResolutionSchema>;
+export type RunResolutionReason = z.infer<typeof runResolutionReasonSchema>;

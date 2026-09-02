@@ -38,17 +38,18 @@ export function loadAssessments(runId: string): Assessment[] {
 
 export function validateAssessmentHistoryForRun(
   run: Run,
-  evidenceSubmissionId: string,
+  evidenceSubmissionIds: readonly string[],
   expectedCriterionIds: readonly string[],
   assessments: readonly Assessment[],
 ): void {
   const expected = new Set(expectedCriterionIds);
+  const evidenceIds = new Set(evidenceSubmissionIds);
   for (const assessment of assessments) {
     if (
       assessment.runId !== run.runId ||
       assessment.contractVersionId !== run.contractVersionId ||
       assessment.contractHash !== run.contractHash ||
-      assessment.evidenceSubmissionId !== evidenceSubmissionId
+      !evidenceIds.has(assessment.evidenceSubmissionId)
     ) throw new Error("Saved assessment does not match the selected run, contract, and evidence.");
     const actual = new Set(assessment.criteria.map((item) => item.criterionId));
     if (actual.size !== expected.size || [...expected].some((id) => !actual.has(id))) {
@@ -67,7 +68,8 @@ export function persistAssessment(
   if (existing.length >= MAX_ASSESSMENT_VERSIONS_PER_RUN) {
     throw new Error("This run has reached its bounded assessment-revision limit.");
   }
-  const expectedState = existing.length === 0 ? "evidence_submitted" : "assessed";
+  const isNewEvidence = existing.at(-1)?.evidenceSubmissionId !== assessment.evidenceSubmissionId;
+  const expectedState = isNewEvidence ? "evidence_submitted" : "assessed";
   if (run.state !== expectedState) {
     throw new Error(`Assessment version ${existing.length + 1} requires a run in the ${expectedState} state.`);
   }

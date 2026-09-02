@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -11,12 +12,19 @@ import {
 import type { EvidenceSubmission } from "@loopz/contracts/evidence";
 import type { AcceptanceCriterion } from "@loopz/contracts/loopspec";
 import type { Run } from "@loopz/contracts/run";
+import type { RunResolution } from "@loopz/contracts/run";
 import type { ConfirmedContractVersion } from "@loopz/contracts/versioning";
 import { applyAssessmentCorrection, compileAssessment } from "@loopz/core/assessment";
+import { determineRunNextStep, resolveRun } from "@loopz/core";
 
 import { loadTaskRunById } from "../artifacts/task-storage";
 import { loadEvidenceSubmissions, validateEvidenceHistoryForRun } from "../evidence/evidence-storage";
 import { loadContractVersions } from "../versioning/version-storage";
+import {
+  beginAdditionalEvidenceReturn,
+  loadRunResolution,
+  persistRunResolution,
+} from "../repair/run-resolution-storage";
 import {
   loadAssessments,
   persistAssessment,
@@ -29,6 +37,7 @@ type LoadedAssessment = {
   version: ConfirmedContractVersion;
   submission: EvidenceSubmission;
   history: Assessment[];
+  resolution: RunResolution | null;
 };
 
 const LABELS: Record<CriterionStatus, string> = {
@@ -43,6 +52,7 @@ const LABELS: Record<CriterionStatus, string> = {
 };
 
 export function AssessmentResults({ runId }: { runId: string }) {
+  const router = useRouter();
   const [loaded, setLoaded] = useState<LoadedAssessment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [correcting, setCorrecting] = useState<string | null>(null);
@@ -69,24 +79,27 @@ export function AssessmentResults({ runId }: { runId: string }) {
         let history = loadAssessments(run.runId);
         validateAssessmentHistoryForRun(
           run,
-          submission.submissionId,
+          evidenceHistory.map((item) => item.submissionId),
           version.loopSpec.acceptance.criteria.map((item) => item.id),
           history,
         );
         let currentRun = run;
-        if (history.length === 0) {
+        const needsAutomatedAssessment = history.at(-1)?.evidenceSubmissionId !== submission.submissionId;
+        if (needsAutomatedAssessment) {
           const assessment = await compileAssessment({
             run,
             version,
             submission,
             assessmentId: crypto.randomUUID(),
             assessedAt: new Date().toISOString(),
+            assessmentVersion: history.length + 1,
+            previousAssessmentId: history.at(-1)?.assessmentId ?? null,
           });
           const concurrentHistory = loadAssessments(run.runId);
-          if (concurrentHistory.length > 0) {
+          if (concurrentHistory.at(-1)?.evidenceSubmissionId === submission.submissionId) {
             validateAssessmentHistoryForRun(
               run,
-              submission.submissionId,
+              evidenceHistory.map((item) => item.submissionId),
               version.loopSpec.acceptance.criteria.map((item) => item.id),
               concurrentHistory,
             );
@@ -97,10 +110,14 @@ export function AssessmentResults({ runId }: { runId: string }) {
             currentRun = saved.run;
             history = saved.assessments;
           }
-        } else if (run.state !== "assessed") {
+        } else if (run.state !== "assessed" && run.state !== "completed" && run.state !== "blocked") {
           throw new Error("Assessment history exists but the run state is inconsistent.");
         }
-        if (active) setLoaded({ run: currentRun, version, submission, history });
+        const resolution = loadRunResolution(run.runId);
+        if (resolution && (resolution.assessmentId !== history.at(-1)?.assessmentId || resolution.contractHash !== run.contractHash)) {
+          throw new Error("The terminal resolution does not match the latest assessment.");
+        }
+        if (active) setLoaded({ run: currentRun, version, submission, history, resolution });
       } catch (cause) {
         if (active) setError(cause instanceof Error ? cause.message : "Assessment could not be loaded.");
       }
@@ -145,6 +162,32 @@ export function AssessmentResults({ runId }: { runId: string }) {
     status,
     assessment.criteria.filter((item) => item.status === status).length,
   ])) as Record<CriterionStatus, number>;
+  const nextStep = loaded.run.state === "assessed"
+    ? determineRunNextStep(loaded.run, loaded.version, assessment)
+    : null;
+
+  function finishRun() {
+    if (!loaded || !assessment) return;
+    setError(null);
+    try {
+      const resolved = resolveRun({
+        run: loaded.run, version: loaded.version, assessment,
+        resolutionId: crypto.randomUUID(), resolvedAt: new Date().toISOString(),
+      });
+      persistRunResolution(loaded.run, resolved.run, resolved.resolution);
+      setLoaded({ ...loaded, run: resolved.run, resolution: resolved.resolution });
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "The run could not be resolved."); }
+  }
+
+  function requestMoreEvidence() {
+    if (!loaded || !assessment) return;
+    setError(null);
+    try {
+      const run = beginAdditionalEvidenceReturn(loaded.run, assessment, new Date().toISOString());
+      setLoaded({ ...loaded, run });
+      router.push(`/runs/${run.runId}/evidence`);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Additional evidence could not be requested."); }
+  }
 
   return (
     <main className={styles.page}>
@@ -205,13 +248,13 @@ export function AssessmentResults({ runId }: { runId: string }) {
                 <div className={styles.missing}><strong>Missing evidence</strong><ul>{result.missingRequiredEvidence.map((item) => <li key={item}>{item}</li>)}</ul></div>
               ) : null}
               <EvidenceTrace ids={result.evidenceReferences} evidence={evidence} />
-              {correcting === result.criterionId ? (
+              {!loaded.resolution && correcting === result.criterionId ? (
                 <CorrectionForm result={result} onCancel={() => setCorrecting(null)} onSave={correct} />
-              ) : (
+              ) : !loaded.resolution ? (
                 <button className={styles.textButton} type="button" onClick={() => setCorrecting(result.criterionId)}>
                   Correct this assessment
                 </button>
-              )}
+              ) : null}
             </article>
           );
         })}
@@ -221,9 +264,11 @@ export function AssessmentResults({ runId }: { runId: string }) {
         <p className="eyebrow">Recommended next action</p>
         <h2>{assessment.recommendedNextAction}</h2>
         <div className={styles.actions}>
-          {assessment.outcome === "completed_with_evidence"
-            ? <span className={styles.ready}>Ready to complete in Phase 9</span>
-            : <span className={styles.ready}>Focused repair continues in Phase 9</span>}
+          {loaded.resolution ? <span className={styles.ready}>Run {loaded.resolution.state}: {loaded.resolution.explanation}</span> : null}
+          {!loaded.resolution && nextStep === "complete" ? <button className="button" onClick={finishRun} type="button">Mark run complete</button> : null}
+          {!loaded.resolution && nextStep === "repair" ? <Link className="button" href={`/runs/${runId}/repair`}>Generate focused repair</Link> : null}
+          {!loaded.resolution && nextStep === "more_evidence" ? <button className="button" onClick={requestMoreEvidence} type="button">Submit missing evidence</button> : null}
+          {!loaded.resolution && nextStep === "block" ? <button className="button" onClick={finishRun} type="button">Stop and record outcome</button> : null}
           <Link className="button secondary" href={`/runs/${runId}/evidence`}>Review source evidence</Link>
         </div>
       </section>

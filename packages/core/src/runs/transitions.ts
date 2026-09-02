@@ -7,7 +7,7 @@ const allowedTransitions: Record<RunState, readonly RunState[]> = {
   copied: ["awaiting_evidence", "abandoned"],
   awaiting_evidence: ["evidence_submitted", "abandoned"],
   evidence_submitted: ["assessed", "blocked"],
-  assessed: ["repair_generated", "completed", "blocked"],
+  assessed: ["repair_generated", "awaiting_evidence", "completed", "blocked"],
   repair_generated: ["awaiting_evidence", "blocked"],
   completed: [],
   blocked: [],

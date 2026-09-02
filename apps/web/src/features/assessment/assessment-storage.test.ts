@@ -64,6 +64,20 @@ describe("assessment persistence", () => {
     expect(() => persistAssessment(saved.run, second)).toThrow("immutable history");
   });
 
+  it("appends a new automated assessment for a later evidence submission", () => {
+    const first = persistAssessment(run, assessment());
+    const returnedRun = { ...first.run, state: "evidence_submitted" as const };
+    const second = assessmentSchema.parse({
+      ...assessment(2, "66666666-6666-4666-8666-666666666666", first.assessments[0]!.assessmentId),
+      evidenceSubmissionId: "77777777-7777-4777-8777-777777777777",
+    });
+    const saved = persistAssessment(returnedRun, second);
+    expect(saved.assessments.map((item) => item.evidenceSubmissionId)).toEqual([
+      "44444444-4444-4444-8444-444444444444",
+      "77777777-7777-4777-8777-777777777777",
+    ]);
+  });
+
   it("rejects broken revision chains and mismatched sources", () => {
     values.set(assessmentStorageKey(run.runId), JSON.stringify([
       assessment(), assessment(2, "66666666-6666-4666-8666-666666666666", "77777777-7777-4777-8777-777777777777"),
@@ -71,7 +85,7 @@ describe("assessment persistence", () => {
     expect(() => loadAssessments(run.runId)).toThrow("broken revision chain");
     expect(() => validateAssessmentHistoryForRun(
       run,
-      "99999999-9999-4999-8999-999999999999",
+      ["99999999-9999-4999-8999-999999999999"],
       ["AC-001"],
       [assessment()],
     )).toThrow("does not match");
