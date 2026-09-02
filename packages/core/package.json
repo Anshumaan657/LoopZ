@@ -8,6 +8,7 @@
     "./intake": "./src/interview/analyze-idea-intake.ts",
     "./interview": "./src/interview/create-interview-session.ts",
     "./generation": "./src/generation/index.ts",
+    "./task": "./src/task/index.ts",
     "./*": "./src/*.ts"
   },
   "scripts": {

@@ -5,4 +5,5 @@ export * from "./interview";
 export * from "./loopspec";
 export * from "./repair";
 export * from "./run";
+export * from "./task";
 export * from "./validation";

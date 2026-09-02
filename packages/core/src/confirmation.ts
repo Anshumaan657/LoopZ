@@ -9,27 +9,11 @@ import {
 } from "@loopz/contracts/versioning";
 
 import { validateSafetyContractDraft } from "./generation/compile-safety-contract";
+import { hashCanonicalValue } from "./canonical-hash";
 import { validateLoopSpec } from "./validation/validate-loop-spec";
 
 function confirmedDecision<T extends { confirmedByUser: boolean }>(decision: T): T {
   return { ...decision, confirmedByUser: true };
-}
-
-function canonicalJson(value: unknown): string {
-  if (value === null || typeof value !== "object") return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  return `{${Object.entries(value as Record<string, unknown>)
-    .sort(([left], [right]) => left.localeCompare(right))
-    .map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`)
-    .join(",")}}`;
-}
-
-async function sha256(value: string): Promise<string> {
-  const bytes = new TextEncoder().encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return `sha256:${Array.from(new Uint8Array(digest), (byte) =>
-    byte.toString(16).padStart(2, "0"),
-  ).join("")}`;
 }
 
 export function compileConfirmedLoopSpec(draftInput: SafetyContractDraft) {
@@ -128,7 +112,7 @@ export async function confirmContractVersion(input: {
   }
 
   const loopSpec = compileConfirmedLoopSpec(draft);
-  const contractHash = await sha256(canonicalJson(loopSpec));
+  const contractHash = await hashCanonicalValue(loopSpec);
   const actionByName = new Map(draft.safety.plannedActions.map((action) => [action.action, action]));
 
   return confirmedContractVersionSchema.parse({

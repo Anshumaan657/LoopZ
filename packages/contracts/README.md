@@ -19,6 +19,7 @@ Implemented Phase 2 contracts:
 - Evidence submissions and evidence items
 - Criterion assessments
 - Bounded repair tasks
+- Provider-neutral execution tasks linked to confirmed contract versions
 - Stable validation issues
 
 See `docs/architecture/loopspec-lite.md`, `validation-rule-catalog.md`, and `schema-versioning-policy.md` for the contract rules.

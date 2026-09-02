@@ -4,6 +4,7 @@ import { assessmentSchema } from "./assessment.js";
 import { evidenceSubmissionSchema } from "./evidence.js";
 import { loopSpecLiteSchema } from "./loopspec.js";
 import { repairTaskSchema } from "./repair.js";
+import { providerNeutralTaskSchema } from "./task.js";
 
 type JsonSchemaArtifact = {
   filename: string;
@@ -36,6 +37,14 @@ export const contractJsonSchemas: JsonSchemaArtifact[] = [
       loopSpecLiteSchema,
       "loopspec-lite.schema.json",
       "LoopSpec Lite 0.1",
+    ),
+  },
+  {
+    filename: "provider-neutral-task.schema.json",
+    schema: createJsonSchema(
+      providerNeutralTaskSchema,
+      "provider-neutral-task.schema.json",
+      "Provider-Neutral Execution Task 0.1",
     ),
   },
   {
