@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const MAX_RENDERED_ARTIFACT_CHARACTERS = 200_000;
+
 export const artifactKindSchema = z.enum([
   "project_spec",
   "acceptance_criteria",

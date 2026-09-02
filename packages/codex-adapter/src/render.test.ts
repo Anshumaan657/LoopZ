@@ -1,13 +1,14 @@
 import { readFileSync } from "node:fs";
 
 import {
+  MAX_RENDERED_ARTIFACT_CHARACTERS,
   loopSpecLiteSchema,
   providerNeutralTaskSchema,
   type ProviderNeutralTask,
 } from "@loopz/contracts";
 import { describe, expect, it } from "vitest";
 
-import { renderCodexArtifacts } from "./render";
+import { renderCodexArtifacts } from "./bounded-render";
 
 function validTask(): ProviderNeutralTask {
   const spec = loopSpecLiteSchema.parse(JSON.parse(readFileSync(
@@ -98,5 +99,11 @@ describe("renderCodexArtifacts", () => {
   it("is deterministic when task and metadata inputs are fixed", () => {
     const task = validTask();
     expect(renderCodexArtifacts(task, options)).toEqual(renderCodexArtifacts(task, options));
+  });
+
+  it("rejects rendered artifacts above the delivery ceiling", () => {
+    const task = validTask();
+    task.contract.request.originalPrompt = "x".repeat(MAX_RENDERED_ARTIFACT_CHARACTERS);
+    expect(() => renderCodexArtifacts(task, options)).toThrow("delivery limit");
   });
 });
