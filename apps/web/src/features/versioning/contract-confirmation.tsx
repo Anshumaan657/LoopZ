@@ -11,6 +11,8 @@ import type { SafetyContractDraft } from "@loopz/contracts/loopspec";
 import { confirmContractVersion } from "@loopz/core/confirmation";
 import { validateSafetyContractDraft } from "@loopz/core/generation";
 
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
 import { loadOrGenerateContract } from "../contract/contract-storage";
 import { appendContractVersion, loadContractVersions } from "./version-storage";
 import styles from "./contract-confirmation.module.css";
@@ -92,6 +94,9 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
     (action) => action.requiresApproval,
   );
   const ready = certified && requiredActions.every((action) => approvedActions.includes(action.action));
+  const remainingApprovals = requiredActions.filter(
+    (action) => !approvedActions.includes(action.action),
+  ).length;
 
   return (
     <main className={styles.page}>
@@ -101,6 +106,7 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
 
       <header className={styles.header}>
         <p className="eyebrow">Final confirmation</p>
+        <WorkflowProgress stage="Confirm" next="Generate the copy-ready agent task" />
         <h1>One final check before your agent gets to work.</h1>
         <p>
           Review the important boundaries, approve sensitive actions, and lock a version you can
@@ -109,7 +115,7 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
       </header>
 
       {confirmed ? (
-        <section className={styles.confirmed} aria-live="polite">
+        <WorkflowGrid><section className={styles.confirmed} aria-live="polite">
           <span className="status-pill">Version confirmed</span>
           <h2>Contract v{confirmed.version} is ready.</h2>
           <dl>
@@ -117,18 +123,13 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
             <div><dt>Confirmed</dt><dd>{new Date(confirmed.confirmedAt).toLocaleString()}</dd></div>
             <div><dt>Content hash</dt><dd><code>{confirmed.contractHash}</code></dd></div>
           </dl>
-          <div className={styles.actions}>
-            <Link className="button" href={`/projects/${projectId}/task?version=${confirmed.versionId}`}>
-              Generate the agent task
-            </Link>
-            <Link className="button secondary" href={`/projects/${projectId}/contract`}>
-              Create a revised version
-            </Link>
-          </div>
-        </section>
+          <ActionRow
+            back={<Link className="button secondary" href={`/projects/${projectId}/contract`}>Create a revised version</Link>}
+            primary={<Link className="button" href={`/projects/${projectId}/task?version=${confirmed.versionId}`}>Generate the agent task</Link>}
+          />
+        </section></WorkflowGrid>
       ) : (
-        <div className={styles.layout}>
-          <section className={styles.card}>
+        <WorkflowGrid className={styles.layout} aside={<section className={styles.card}>
             <h2>Final contract summary</h2>
             <dl className={styles.summary}>
               <div><dt>Goal</dt><dd>{loaded.draft.objective.goal.value}</dd></div>
@@ -150,8 +151,7 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
               <li>The same failure repeats after two repair attempts.</li>
               <li>Continuing would expand scope or violate a restriction.</li>
             </ul>
-          </section>
-
+          </section>}>
           <section className={styles.card}>
             <h2>Human approvals</h2>
             {requiredActions.length === 0 ? (
@@ -193,13 +193,14 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
               </span>
             </label>
             {error ? <p className={styles.error} role="alert">{error}</p> : null}
-            <button className="button" disabled={!ready || working} onClick={confirm} type="button">
-              {working
-                ? "Creating immutable version…"
-                : `Confirm version ${(loaded.versions.at(-1)?.version ?? 0) + 1}`}
-            </button>
+            <ActionRow
+              back={<Link className="button secondary" href={`/projects/${projectId}/contract`}>Back</Link>}
+              disabledReason={ready ? null : remainingApprovals > 0 ? `${remainingApprovals} approval ${remainingApprovals === 1 ? "is" : "are"} still required, plus final confirmation.` : "Complete the final confirmation to lock this version."}
+              primary={<button className="button" disabled={!ready || working} onClick={confirm} type="button">{working ? "Creating immutable version…" : `Confirm version ${(loaded.versions.at(-1)?.version ?? 0) + 1}`}</button>}
+              stickyOnMobile
+            />
           </section>
-        </div>
+        </WorkflowGrid>
       )}
 
       {loaded.versions.length > 0 ? (
@@ -226,6 +227,7 @@ function ConfirmationState({ projectId, message }: { projectId: string; message:
     <main className={styles.page}>
       <section className={styles.state}>
         <p className="eyebrow">Contract confirmation</p>
+        <WorkflowProgress stage="Confirm" next="Generate the copy-ready agent task" />
         <h1>Confirmation unavailable</h1>
         <p>{message}</p>
         <Link className="button" href={`/projects/${projectId}/contract`}>

@@ -12,6 +12,8 @@ import type { ConfirmedContractVersion } from "@loopz/contracts/versioning";
 import { resolveRun } from "@loopz/core";
 import { compileRepairTask } from "@loopz/core/repair";
 
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
 import { copyExactTask, downloadExactTask } from "../artifacts/task-actions";
 import { loadTaskRunById } from "../artifacts/task-storage";
 import { loadAssessments } from "../assessment/assessment-storage";
@@ -155,7 +157,8 @@ export function RepairDelivery({ runId }: { runId: string }) {
 
   return <main className={styles.page}>
     <nav className={styles.nav} aria-label="Repair delivery navigation"><Link href="/">LoopZ</Link><Link href={`/runs/${runId}/assessment`}>Back to assessment</Link></nav>
-    <header className={styles.header}><p className="eyebrow">Focused repair</p><h1>Fix only what remains unresolved.</h1><p>This repair preserves supported behavior and carries the exact evidence that triggered another attempt.</p></header>
+    <header className={styles.header}><p className="eyebrow">Focused repair</p><WorkflowProgress stage="Repair" next="Return fresh evidence for reassessment" /><h1>Fix only what remains unresolved.</h1><p>This repair preserves supported behavior and carries the exact evidence that triggered another attempt.</p></header>
+    <WorkflowGrid>
     <section className={styles.meta} aria-label="Repair details">
       <div><span>Attempt</span><strong>{delivery.repair.attempt} of {delivery.version.loopSpec.limits.maximumRepairAttempts}</strong></div>
       <div><span>Unresolved</span><strong>{delivery.repair.unresolvedCriteria.length}</strong></div>
@@ -163,16 +166,24 @@ export function RepairDelivery({ runId }: { runId: string }) {
       <div><span>Run</span><code>{delivery.run.runId}</code></div>
     </section>
     <aside className={styles.warning} role="note"><strong>Use the same repository and coding-agent session.</strong> The prompt is intentionally bounded; expanding scope invalidates its assessment chain.</aside>
+    <section className={styles.summary} aria-labelledby="repair-summary-title">
+      <div><p className="eyebrow">Repair brief</p><h2 id="repair-summary-title">What this attempt may change</h2></div>
+      <div className={styles.summaryActions}><ActionRow back={<button className="button secondary" onClick={downloadRepair} type="button">Download Markdown</button>} primary={<button className="button" onClick={() => void copyRepair()} type="button">Copy focused repair</button>} stickyOnMobile /></div>
+      <article><h3>Unresolved criteria</h3><ul>{delivery.repair.unresolvedCriteria.map((criterion) => <li key={criterion.criterionId}><code>{criterion.criterionId}</code><span>{criterion.requirement}</span></li>)}</ul></article>
+      <article><h3>Preserve</h3>{delivery.repair.preservedCriterionIds.length > 0 ? <ul>{delivery.repair.preservedCriterionIds.map((id) => <li key={id}><code>{id}</code></li>)}</ul> : <p>No previously supported criteria were recorded.</p>}</article>
+      <article><h3>Regression checks</h3><ul>{delivery.repair.requiredRegressionChecks.map((check) => <li key={check}><code>{check}</code></li>)}</ul></article>
+      <article><h3>Stop conditions</h3><ul>{delivery.repair.stopWhen.map((condition) => <li key={condition}>{condition}</li>)}</ul></article>
+    </section>
     <section className={styles.preview}>
       <div><span>Copy-ready Markdown</span><strong>LOOPZ_REPAIR_{delivery.repair.attempt}.md</strong></div>
-      <pre tabIndex={0}><code>{delivery.repair.instructions}</code></pre>
-      <div className={styles.actions}><button className="button" onClick={() => void copyRepair()} type="button">Copy focused repair</button><button className="button secondary" onClick={downloadRepair} type="button">Download Markdown</button></div>
+      <details><summary>Inspect the exact repair instruction</summary><pre tabIndex={0}><code>{delivery.repair.instructions}</code></pre></details>
       <div aria-live="polite">{notice ? <p className={styles.success}>{notice}</p> : null}{error ? <p className={styles.error} role="alert">{error}</p> : null}</div>
     </section>
-    <section className={styles.next}><p className="eyebrow">After the agent finishes</p><h2>Return fresh evidence for reassessment.</h2><p>The previous evidence remains immutable. This attempt creates a new evidence submission and a new assessment revision.</p><button className="button" disabled={!delivery.delivered} onClick={returnEvidence} type="button">{delivery.delivered ? "Return repair evidence" : "Copy or download the repair first"}</button></section>
+    <section className={styles.next}><p className="eyebrow">After the agent finishes</p><h2>Return fresh evidence for reassessment.</h2><p>The previous evidence remains immutable. This attempt creates a new evidence submission and a new assessment revision.</p><ActionRow back={<Link className="button secondary" href={`/runs/${runId}/assessment`}>Back to assessment</Link>} disabledReason={!delivery.delivered ? "Copy or download the focused repair before returning fresh evidence." : null} primary={<button className="button" disabled={!delivery.delivered} onClick={returnEvidence} type="button">Return repair evidence</button>} /></section>
+    </WorkflowGrid>
   </main>;
 }
 
 function RepairState({ runId, message }: { runId: string; message: string }) {
-  return <main className={styles.page}><section className={styles.state}><p className="eyebrow">Focused repair</p><h1>Repair unavailable</h1><p role="status">{message}</p><Link className="button" href={`/runs/${runId}/assessment`}>Return to assessment</Link></section></main>;
+  return <main className={styles.page}><WorkflowGrid><section className={styles.state}><p className="eyebrow">Focused repair</p><WorkflowProgress stage="Repair" next="Return fresh evidence for reassessment" /><h1>Repair unavailable</h1><p className={message.startsWith("Preparing") ? styles.processing : undefined} role="status">{message}</p><Link className="button" href={`/runs/${runId}/assessment`}>Return to assessment</Link></section></WorkflowGrid></main>;
 }

@@ -9,6 +9,8 @@ import { validateSafetyContractDraft } from "@loopz/core/generation";
 import { contractReviewInput, reviseSafetyContractDraft } from "@loopz/core/review";
 
 import { LineSidebar } from "../../components/line-sidebar";
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
 import {
   generateSafetyDraft,
   loadOrGenerateContract,
@@ -101,22 +103,22 @@ export function ContractReview({ projectId }: { projectId: string }) {
 
       <header className={styles.header}>
         <p className="eyebrow">Confirm the execution contract</p>
+        <WorkflowProgress stage="Contract" next="Lock an immutable contract version" />
         <h1>Make the contract match your intent.</h1>
         <p>Review one decision at a time. Stable IDs stay locked for traceability.</p>
       </header>
 
-      <div className={styles.contractBody}>
-        <LineSidebar
-          items={STEPS}
-          currentStep={step}
-          furthestStep={furthestStep}
-          onItemClick={moveTo}
-        />
+      <WorkflowGrid
+        className={styles.contractBody}
+        aside={<LineSidebar items={STEPS} currentStep={step} furthestStep={furthestStep} onItemClick={moveTo} />}
+      >
         <div className={styles.contentColumn}>
-          <p className={styles.mobileStep}>Step {step + 1} of {STEPS.length} · {STEPS[step]}</p>
+          <p className={styles.mobileStep}>Contract step {step + 1} of {STEPS.length} · {STEPS[step]}</p>
 
-          {error ? <p className={styles.error} role="alert">{error}</p> : null}
-          {saved ? <p className={styles.success} role="status">Contract saved.</p> : null}
+          <div aria-live="polite">
+            {error ? <p className={styles.error} role="alert">{error}</p> : null}
+            {saved ? <p className={styles.success} role="status">Contract saved. It is ready for final confirmation.</p> : null}
+          </div>
 
           <div className={styles.workspace} key={step}>
         {step === 0 ? (
@@ -128,12 +130,17 @@ export function ContractReview({ projectId }: { projectId: string }) {
             <div className={styles.list}>
               {loaded.input.deliverables.map((item, index) => (
                 <div className={styles.row} key={item.id}>
-                  <code>{item.id}</code>
-                  <input aria-label={`${item.id} description`} value={item.description} onChange={(event) => updateInput((input) => ({ ...input, deliverables: input.deliverables.map((candidate, candidateIndex) => candidateIndex === index ? { ...candidate, description: event.target.value } : candidate) }))} />
-                  <select aria-label={`${item.id} priority`} value={item.priority} onChange={(event) => updateInput((input) => ({ ...input, deliverables: input.deliverables.map((candidate, candidateIndex) => candidateIndex === index ? { ...candidate, priority: event.target.value as "required" | "optional" } : candidate) }))}>
-                    <option value="required">Required</option>
-                    <option value="optional">Optional</option>
-                  </select>
+                  <label className={styles.rowMain}>
+                    <span>Deliverable {index + 1} <code>{item.id}</code></span>
+                    <input aria-label={`${item.id} description`} value={item.description} onChange={(event) => updateInput((input) => ({ ...input, deliverables: input.deliverables.map((candidate, candidateIndex) => candidateIndex === index ? { ...candidate, description: event.target.value } : candidate) }))} />
+                  </label>
+                  <label>
+                    <span>Importance</span>
+                    <select aria-label={`${item.id} priority`} value={item.priority} onChange={(event) => updateInput((input) => ({ ...input, deliverables: input.deliverables.map((candidate, candidateIndex) => candidateIndex === index ? { ...candidate, priority: event.target.value as "required" | "optional" } : candidate) }))}>
+                      <option value="required">Required</option>
+                      <option value="optional">Optional</option>
+                    </select>
+                  </label>
                 </div>
               ))}
             </div>
@@ -152,12 +159,17 @@ export function ContractReview({ projectId }: { projectId: string }) {
           <ReviewSection title="Acceptance & proof" description="Define what passes and the evidence the agent must return.">
             <div className={styles.criteria}>
               {loaded.input.criteria.map((criterion, index) => (
-                <article className={styles.criterion} key={criterion.id}>
-                  <code>{criterion.id}</code>
-                  <label><span>Passing behavior</span><textarea rows={3} value={criterion.requirement} onChange={(event) => updateInput((input) => ({ ...input, criteria: input.criteria.map((item, itemIndex) => itemIndex === index ? { ...item, requirement: event.target.value } : item) }))} /></label>
-                  <label><span>Verification method</span><textarea rows={3} value={criterion.verificationMethod} onChange={(event) => updateInput((input) => ({ ...input, criteria: input.criteria.map((item, itemIndex) => itemIndex === index ? { ...item, verificationMethod: event.target.value } : item) }))} /></label>
-                  <label><span>Required evidence · one item per line</span><textarea rows={3} value={criterion.requiredEvidence.join("\n")} onChange={(event) => updateInput((input) => ({ ...input, criteria: input.criteria.map((item, itemIndex) => itemIndex === index ? { ...item, requiredEvidence: lines(event.target.value) } : item) }))} /></label>
-                </article>
+                <details className={styles.criterion} key={criterion.id}>
+                  <summary>
+                    <span><strong>Criterion {index + 1}</strong><code>{criterion.id}</code></span>
+                    <span>{criterion.requirement}</span>
+                  </summary>
+                  <div className={styles.criterionBody}>
+                    <label><span>Passing behavior</span><textarea rows={3} value={criterion.requirement} onChange={(event) => updateInput((input) => ({ ...input, criteria: input.criteria.map((item, itemIndex) => itemIndex === index ? { ...item, requirement: event.target.value } : item) }))} /></label>
+                    <label><span>Verification method</span><textarea rows={3} value={criterion.verificationMethod} onChange={(event) => updateInput((input) => ({ ...input, criteria: input.criteria.map((item, itemIndex) => itemIndex === index ? { ...item, verificationMethod: event.target.value } : item) }))} /></label>
+                    <label><span>Required evidence · one item per line</span><textarea rows={3} value={criterion.requiredEvidence.join("\n")} onChange={(event) => updateInput((input) => ({ ...input, criteria: input.criteria.map((item, itemIndex) => itemIndex === index ? { ...item, requiredEvidence: lines(event.target.value) } : item) }))} /></label>
+                  </div>
+                </details>
               ))}
             </div>
             <label><span>Verification commands · one command per line</span><textarea rows={4} value={loaded.input.verificationCommands.join("\n")} onChange={(event) => updateInput((input) => ({ ...input, verificationCommands: lines(event.target.value) }))} /></label>
@@ -167,20 +179,23 @@ export function ContractReview({ projectId }: { projectId: string }) {
         {step === 3 ? <ReviewSummary input={loaded.input} restrictions={loaded.draft.safety.restrictedActions} onEdit={moveTo} /> : null}
           </div>
 
-          <div className={styles.actions}>
-            <div>
-              {step > 0 ? <button className="button secondary" onClick={() => moveTo(step - 1)} type="button">Back</button> : <Link className="button secondary" href={`/projects/${projectId}/interview`}>Back</Link>}
-              <button className={styles.textButton} onClick={resetReview} type="button">Reset draft</button>
-            </div>
-            <div>
-              {step < 3 ? <button className="button" onClick={() => moveTo(step + 1)} type="button">Continue</button> : null}
-              {step === 3 && !saved ? <button className="button" onClick={saveReview} type="button">Save contract</button> : null}
-              {step === 3 && saved && validation.valid ? <Link className="button" href={`/projects/${projectId}/contract/confirm`}>Continue to confirmation</Link> : null}
-              {step === 3 && saved && !validation.valid ? <span className={styles.actionHint}>Resolve the validation issue above before confirmation.</span> : null}
-            </div>
-          </div>
+          <ActionRow
+            back={step > 0 ? <button className="button secondary" onClick={() => moveTo(step - 1)} type="button">Back</button> : <Link className="button secondary" href={`/projects/${projectId}/interview`}>Back</Link>}
+            destructive={<button className={styles.textButton} onClick={resetReview} type="button">Reset draft</button>}
+            disabledReason={step === 3 && saved && !validation.valid ? "Resolve the validation issue above before confirmation." : null}
+            primary={
+              step < 3
+                ? <button className="button" onClick={() => moveTo(step + 1)} type="button">Continue</button>
+                : !saved
+                  ? <button className="button" onClick={saveReview} type="button">Save contract</button>
+                  : validation.valid
+                    ? <Link className="button" href={`/projects/${projectId}/contract/confirm`}>Continue to confirmation</Link>
+                    : <button className="button" disabled type="button">Continue to confirmation</button>
+            }
+            stickyOnMobile
+          />
         </div>
-      </div>
+      </WorkflowGrid>
     </main>
   );
 }
@@ -200,7 +215,7 @@ function SummaryBlock({ title, children, onEdit }: { title: string; children: Re
 }
 
 function ScopeEditor({ label, items, onChange }: { label: string; items: ContractReviewInput["includedScope"]; onChange: (index: number, value: string) => void }) {
-  return <div className={styles.scopeGroup}><strong>{label}</strong>{items.length === 0 ? <p>None.</p> : items.map((item, index) => <label key={item.id}><span>{item.id}</span><input value={item.description} onChange={(event) => onChange(index, event.target.value)} /></label>)}</div>;
+  return <div className={styles.scopeGroup}><strong>{label}</strong>{items.length === 0 ? <p>None.</p> : items.map((item, index) => <label key={item.id}><span>{label} item {index + 1} <code>{item.id}</code></span><input value={item.description} onChange={(event) => onChange(index, event.target.value)} /></label>)}</div>;
 }
 
 function ReviewSection({ title, description, children }: { title: string; description: string; children: React.ReactNode }) {
@@ -208,5 +223,5 @@ function ReviewSection({ title, description, children }: { title: string; descri
 }
 
 function ReviewState({ title, message, projectId }: { title: string; message?: string; projectId: string }) {
-  return <main className={styles.page}><section className={styles.state}><p className="eyebrow">Contract setup</p><h1>{title}</h1>{message ? <p>{message}</p> : null}<Link className="button" href={message ? "/projects/new" : `/projects/${projectId}/interview`}>{message ? "Start a new project" : "Back to clarification"}</Link></section></main>;
+  return <main className={styles.page}><WorkflowGrid><section className={styles.state}><p className="eyebrow">Contract setup</p><WorkflowProgress stage="Contract" next="Lock an immutable contract version" /><h1>{title}</h1>{message ? <p>{message}</p> : <p className={styles.processing} role="status">Turning your confirmed decisions into a reviewable contract…</p>}<Link className="button" href={message ? "/projects/new" : `/projects/${projectId}/interview`}>{message ? "Start a new project" : "Back to clarification"}</Link></section></WorkflowGrid></main>;
 }

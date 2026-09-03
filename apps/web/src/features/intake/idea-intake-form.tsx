@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import {
   analyzeIdeaIntake,
@@ -9,6 +9,7 @@ import {
 } from "@loopz/core/intake";
 
 import { GooeyNav } from "../../components/gooey-nav";
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
 
 type IntakeMode = "guided" | "geek";
 type ProjectStatus = "new" | "existing" | "unknown";
@@ -35,6 +36,8 @@ export function IdeaIntakeForm() {
   const [technologyPreferences, setTechnologyPreferences] = useState("");
   const [analysis, setAnalysis] = useState<IntakeAnalysis | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [promptError, setPromptError] = useState<string | null>(null);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     const syncMode = () => {
@@ -55,6 +58,13 @@ export function IdeaIntakeForm() {
 
   function submitIntake(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (originalPrompt.trim().length < 20) {
+      setPromptError("Add a little more detail—at least 20 characters—so LoopZ can preserve your intent.");
+      promptRef.current?.focus();
+      return;
+    }
+    setPromptError(null);
 
     const intake = {
       originalPrompt,
@@ -84,8 +94,14 @@ export function IdeaIntakeForm() {
   }
 
   return (
-    <div className="intake-layout">
-      <form className="intake-form" onSubmit={submitIntake}>
+    <WorkflowGrid className="intake-layout">
+      <form className="intake-form" noValidate onSubmit={submitIntake}>
+        {promptError ? (
+          <div className="form-error-summary" role="alert" tabIndex={-1}>
+            <strong>Check the highlighted field.</strong>
+            <span>{promptError}</span>
+          </div>
+        ) : null}
         <section className="mode-selector" aria-labelledby="mode-selector-title">
           <div>
             <p className="eyebrow">Choose your setup</p>
@@ -103,30 +119,43 @@ export function IdeaIntakeForm() {
           />
         </section>
 
+        <p className="mode-description">
+          {mode === "guided"
+            ? "Guided keeps setup simple and asks only the decisions that can change the result."
+            : "Geek gives you direct control over project context while keeping the same verified workflow."}
+        </p>
+
         <div className="field-group">
           <div className="field-heading">
             <label htmlFor="original-prompt">What do you want to build or change?</label>
             <span>{originalPrompt.length}/4000</span>
           </div>
           <textarea
-            autoFocus
             id="original-prompt"
+            aria-describedby={promptError ? "original-prompt-error" : undefined}
+            aria-invalid={promptError ? true : undefined}
             maxLength={4000}
             minLength={20}
-            onChange={(event) => setOriginalPrompt(event.target.value)}
+            onChange={(event) => {
+              setOriginalPrompt(event.target.value);
+              if (promptError) setPromptError(null);
+            }}
             placeholder="For example: Add a customer feedback form to my existing Next.js app. Save submissions and show a clear success message."
             required
+            ref={promptRef}
             rows={8}
             value={originalPrompt}
           />
+          {promptError ? <p className="form-error" id="original-prompt-error" role="alert">{promptError}</p> : null}
         </div>
 
         {mode === "geek" ? (
           <section className="geek-panel" aria-label="Geek mode controls">
+            <p className="geek-panel-title">Advanced project context</p>
             <div className="super-geek-row">
               <div>
                 <strong>Super Geek</strong>
-                <span>Fine-tune repository and technology context.</span>
+                <span>Use this when repository choices or stack constraints must change the generated task.</span>
               </div>
               <label className="switch">
                 <input
@@ -152,7 +181,7 @@ export function IdeaIntakeForm() {
             </div>
             {superGeek ? (
               <>
-                <div className="field-group">
+                <div className="field-group wide-field">
                   <label htmlFor="project-context">Repository or stack context</label>
                   <textarea
                     id="project-context"
@@ -178,15 +207,14 @@ export function IdeaIntakeForm() {
           </section>
         ) : null}
 
-        <div className="intake-submit-row">
-          <button className="button" type="submit">
-            Go with your idea
-          </button>
-        </div>
+        <ActionRow
+          primary={<button className="button" type="submit">Go with your idea</button>}
+          stickyOnMobile
+        />
       </form>
 
       {analysis ? <IntakeResult analysis={analysis} projectId={projectId} /> : null}
-    </div>
+    </WorkflowGrid>
   );
 }
 
@@ -236,6 +264,7 @@ function IntakeResult({
               : "Clarification recommended"}
           </span>
           <h2>Here&apos;s what LoopZ understood.</h2>
+          <p>{projectId ? <Link href={`/projects/${projectId}/interview`}>{analysis.missingInformation.length === 0 ? "Ready to confirm — no material decisions appear to be missing." : `Mostly clear — ${analysis.missingInformation.length} decision${analysis.missingInformation.length === 1 ? " needs" : "s need"} confirmation.`}</Link> : analysis.missingInformation.length === 0 ? "Ready to confirm — no material decisions appear to be missing." : `Mostly clear — ${analysis.missingInformation.length} decision${analysis.missingInformation.length === 1 ? " needs" : "s need"} confirmation.`}</p>
         </div>
       </div>
 
@@ -243,7 +272,11 @@ function IntakeResult({
         <article>
           <h3>Proposed goal</h3>
           <p>{analysis.intent.goal.value}</p>
-          <small>{Math.round(analysis.intent.goal.confidence * 100)}% extraction confidence</small>
+          <small>
+            {analysis.intent.goal.confidence >= 0.75
+              ? "Strong match to your original wording"
+              : "Needs confirmation during clarification"}
+          </small>
         </article>
         <article>
           <h3>Detected constraints</h3>
@@ -259,20 +292,10 @@ function IntakeResult({
         </article>
       </div>
 
-      <div className="analysis-actions">
-        {projectId ? (
-          <Link className="button" href={`/projects/${projectId}/interview`}>
-            Continue to clarification
-          </Link>
-        ) : null}
-        <button
-          className="button secondary"
-          onClick={() => document.getElementById("original-prompt")?.focus()}
-          type="button"
-        >
-          Edit my idea
-        </button>
-      </div>
+      <ActionRow
+        back={<button className="button secondary" onClick={() => document.getElementById("original-prompt")?.focus()} type="button">Edit my idea</button>}
+        primary={projectId ? <Link className="button" href={`/projects/${projectId}/interview`}>Continue to clarification</Link> : <span />}
+      />
     </section>
   );
 }

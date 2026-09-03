@@ -12,6 +12,7 @@ describe("assessment results UI safeguards", () => {
       "Inspect {ids.length} linked evidence item(s)",
       "Correct this assessment",
       "Correction audit trail",
+      "canReadExistingAssessment(run.state)",
       'role="alert"',
     ]) expect(page).toContain(marker);
     expect(styles).toContain(":focus-visible");

@@ -1,12 +1,13 @@
-.page { width: min(980px,calc(100% - 2rem)); margin: 0 auto; padding: 1.5rem 0 5rem; }
+.page { width: min(1180px,calc(100% - 2.5rem)); margin: 0 auto; padding: 1.5rem 0 5rem; }
 .nav { display:flex; justify-content:flex-end; gap:1rem; color:var(--muted); font-size:.9rem; }
 .nav a:first-child { display:none; }
 .header { padding:4.5rem 0 2rem; }
 .header h1,.state h1 { max-width:18ch; font-size:clamp(2.25rem,5vw,4rem); }
 .header>p:last-child { max-width:48rem; }
-.summary { display:grid; grid-template-columns:repeat(3,1fr); gap:.7rem; margin-bottom:1rem; }
+.asideStack { display: grid; gap: 1rem; }
+.summary { display:grid; gap:.7rem; }
 .summary div { padding:1rem; border-top:1px solid var(--border); background:transparent; }
-.summary span { display:block; color:var(--muted); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; }
+.summary span { display:block; color:var(--muted); font-size:.8rem; letter-spacing:.08em; text-transform:uppercase; }
 .summary strong { display:block; margin-top:.25rem; color:var(--accent); font-size:1.7rem; }
 .boundary,.error { margin:1rem 0; padding:1rem; border-radius:.8rem; line-height:1.55; }
 .boundary { border:1px solid var(--border); background:var(--surface); color:var(--muted); }
@@ -14,20 +15,25 @@
 .error { border:1px solid rgba(255,110,110,.4); color:#ffb0b0; }
 .findings,.criteria,.next,.audit { margin-top:2rem; }
 .findings { padding:1rem 1.25rem; border:1px solid rgba(255,204,102,.3); border-radius:1rem; background:rgba(255,204,102,.06); }
-.findings li,.audit li { margin:.5rem 0; color:var(--muted); line-height:1.5; }
+.findings > ul { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+.findings > ul > li { display: grid; grid-template-columns: 72px minmax(0,1fr); gap: .75rem; margin: 0; color:var(--muted); line-height:1.5; }
+.findings li code { color: var(--text); font-size: .8rem; }
+.findings details { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.findings summary { color: var(--text); cursor: pointer; }
+.findings details li,.audit li { margin:.5rem 0; color:var(--muted); line-height:1.5; }
 .sectionHeading { display:flex; align-items:end; justify-content:space-between; gap:1rem; }
 .sectionHeading h2 { margin:.2rem 0; }
 .criterion { margin-top:1rem; padding:clamp(1rem,3vw,1.4rem); border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); }
 .criterionTop { display:flex; align-items:center; justify-content:space-between; gap:.7rem; }
 .criterion h3 { margin:.9rem 0 .4rem; font-size:1.2rem; }
-.status { border:1px solid; border-radius:999px; padding:.3rem .6rem; font-size:.73rem; font-weight:750; }
+.status { border:1px solid; border-radius:999px; padding:.3rem .6rem; font-size:.8rem; font-weight:750; }
 .positive { border-color:var(--border-strong); color:var(--text); }
 .warning { border-color:rgba(228,201,140,.4); color:var(--warning); }
 .negative { border-color:rgba(255,110,110,.45); color:#ffaaaa; }
 .neutral { border-color:var(--border); color:var(--muted); }
 .meta { display:grid; grid-template-columns:repeat(3,1fr); gap:.55rem; }
 .meta div { padding:.7rem; border:1px solid rgba(255,255,255,.07); border-radius:.65rem; }
-.meta dt { color:var(--muted); font-size:.68rem; text-transform:uppercase; }
+.meta dt { color:var(--muted); font-size:.8rem; text-transform:uppercase; }
 .meta dd { margin:.25rem 0 0; text-transform:capitalize; }
 .missing { margin:.8rem 0; padding:.8rem; border-radius:.65rem; background:rgba(255,204,102,.07); }
 .missing ul { margin-bottom:0; }
@@ -47,5 +53,8 @@
 .ready { color:var(--accent); font-weight:750; }
 .audit { padding-top:1rem; border-top:1px solid var(--border); }
 .state { margin:4rem auto; padding:2rem; border:1px solid var(--border); border-radius:1rem; }
+.processing::before { content:""; display:inline-block; width:8px; height:8px; margin-right:9px; border-radius:50%; background:var(--text); animation:pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity:.3; } }
 .nav a:focus-visible,.textButton:focus-visible,.correction :focus-visible,.trace summary:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
-@media (max-width:650px) { .page{width:min(100% - 1rem,980px)} .header{padding:3rem 0 1.5rem} .summary,.meta{grid-template-columns:1fr} .sectionHeading{display:block} .criterionTop{align-items:flex-start} .status{text-align:center} .actions{display:grid} .actions>*{width:100%} }
+@media (max-width:650px) { .page{width:min(100% - 1.5rem,1180px)} .header{padding:3rem 0 1.5rem} .meta{grid-template-columns:1fr} .sectionHeading{display:block} .criterionTop{align-items:flex-start} .status{text-align:center} .findings > ul > li{grid-template-columns:1fr} }
+@media (prefers-reduced-motion: reduce) { .processing::before { animation: none; } }

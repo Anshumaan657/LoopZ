@@ -1,5 +1,5 @@
-.page { width:min(900px,calc(100% - 32px)); margin:0 auto; padding:24px 0 96px; }
-.nav { min-height:40px; display:flex; justify-content:flex-end; gap:16px; color:var(--muted); font-size:.82rem; }
+.page { width:min(960px,calc(100% - 32px)); margin:0 auto; padding:24px 0 96px; }
+.nav { min-height:40px; display:flex; justify-content:flex-end; gap:16px; color:var(--muted); font-size:.875rem; }
 .nav a:first-child { display:none; }
 .header { max-width:700px; padding:56px 0 32px; }
 .header h1,.state h1 { max-width:18ch; }
@@ -7,13 +7,24 @@
 .meta { display:grid; grid-template-columns:.6fr .6fr .6fr 1.5fr; gap:0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
 .meta div { min-width:0; padding:16px; }
 .meta div + div { border-left:1px solid var(--border); }
-.meta span { display:block; color:var(--muted-soft); font-size:.68rem; text-transform:uppercase; }
+.meta span { display:block; color:var(--muted); font-size:.8rem; text-transform:uppercase; }
 .meta strong,.meta code { display:block; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .warning { margin:24px 0; padding:16px 0; border-bottom:1px solid var(--border); color:var(--muted); }
 .warning strong { color:var(--text); }
+.summary { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 32px; margin:32px 0; padding:24px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.summary > div { grid-column:1 / -1; }
+.summaryActions > div { margin-top:0; padding-top:0; border-top:0; }
+.summary article { min-width:0; padding:18px 0; border-top:1px solid var(--border); }
+.summary h2 { margin:6px 0 20px; }
+.summary h3 { margin:0 0 10px; font-size:1rem; }
+.summary ul { display:grid; gap:8px; margin:0; padding:0; list-style:none; }
+.summary li { display:flex; gap:10px; color:var(--muted); overflow-wrap:anywhere; }
+.summary li code { flex:none; color:var(--text); }
+.summary p { margin:0; }
 .preview { margin-top:32px; overflow:hidden; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); }
 .preview>div:first-child { display:flex; justify-content:space-between; gap:16px; padding:16px; border-bottom:1px solid var(--border); }
 .preview>div:first-child span { color:var(--muted); }
+.preview details summary { min-height:60px; display:flex; align-items:center; padding:16px; border-top:1px solid var(--border); color:var(--text); font-weight:700; cursor:pointer; }
 .preview pre { max-height:38rem; overflow:auto; margin:0; padding:20px; background:#050505; color:#ddd; white-space:pre-wrap; overflow-wrap:anywhere; }
 .actions { display:flex; flex-wrap:wrap; gap:12px; padding:16px; border-top:1px solid var(--border); }
 .preview>div:last-child { min-height:24px; padding:0 16px 12px; }
@@ -21,5 +32,8 @@
 .error { color:var(--danger); }
 .next,.state { margin-top:40px; padding-top:28px; border-top:1px solid var(--border); }
 .next h2 { max-width:24ch; }
-@media(max-width:680px){.page{width:min(100% - 24px,900px)}.header{padding-top:40px}.meta{grid-template-columns:1fr 1fr}.meta div:nth-child(3){border-left:0;border-top:1px solid var(--border)}.meta div:nth-child(4){border-top:1px solid var(--border)}.preview>div:first-child{display:grid}.actions{display:grid}.actions>*{width:100%}}
+ .processing::before { content:""; display:inline-block; width:8px; height:8px; margin-right:9px; border-radius:50%; background:var(--text); animation:pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity:.3; } }
+@media(max-width:680px){.page{width:min(100% - 24px,960px)}.header{padding-top:40px}.meta{grid-template-columns:1fr 1fr}.meta div:nth-child(3){border-left:0;border-top:1px solid var(--border)}.meta div:nth-child(4){border-top:1px solid var(--border)}.summary{grid-template-columns:1fr}.summary>div{grid-column:auto}.preview>div:first-child{display:grid}.actions{display:grid}.actions>*{width:100%}}
 @media(max-width:420px){.meta{grid-template-columns:1fr}.meta div + div{border-left:0;border-top:1px solid var(--border)}}
+@media(prefers-reduced-motion:reduce){.processing::before{animation:none}}

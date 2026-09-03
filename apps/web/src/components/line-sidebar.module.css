@@ -5,7 +5,7 @@
   position: sticky;
   top: 104px;
   align-self: start;
-  min-width: 210px;
+  min-width: 224px;
   padding: 8px 0 8px 44px;
 }
 
@@ -31,7 +31,7 @@
   padding: 4px 0;
   background: transparent;
   color: var(--line-text);
-  font-size: .95rem;
+  font-size: .98rem;
   text-align: left;
   cursor: pointer;
   transform: translateX(calc(var(--effect) * 14px));
@@ -54,7 +54,7 @@
 .button[aria-current="step"]::before { background: var(--line-accent); }
 .button:disabled { color: #454545; cursor: not-allowed; }
 .button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 3px; }
-.index { color: currentColor; font: 600 .7rem/1 ui-monospace, monospace; opacity: .65; }
+.index { color: currentColor; font: 600 .8rem/1 ui-monospace, monospace; opacity: .65; }
 
-@media (max-width: 760px) { .sidebar { display: none; } }
+@media (max-width: 900px) { .sidebar { display: none; } }
 @media (prefers-reduced-motion: reduce) { .button { transform: none !important; transition: none; } }

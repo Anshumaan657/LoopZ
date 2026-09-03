@@ -14,6 +14,9 @@ import {
   createInterviewSession,
 } from "@loopz/core/interview";
 
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
+
 type AcceptedIntakeAnalysis = Extract<IntakeAnalysis, { valid: true }>;
 
 type StoredProjectDraft = {
@@ -102,6 +105,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
       <InterviewShell>
         <section className="interview-state-card interview-error" aria-live="polite">
           <span className="status-pill">Draft unavailable</span>
+          <WorkflowProgress stage="Clarify" next="Review the execution contract" />
           <h1>LoopZ cannot open this interview.</h1>
           <p>{loadError}</p>
           <Link className="button" href="/projects/new">
@@ -117,6 +121,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
       <InterviewShell>
         <section className="interview-state-card" aria-live="polite">
           <span className="status-pill">Loading</span>
+          <WorkflowProgress stage="Clarify" next="Review the execution contract" />
           <h1>Preparing the smallest useful question set…</h1>
         </section>
       </InterviewShell>
@@ -177,6 +182,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
       <header className="interview-header">
         <div>
           <p className="eyebrow">Clarify the build</p>
+          <WorkflowProgress stage="Clarify" next="Review and save the execution contract" />
           <h1>Resolve only what changes the outcome.</h1>
         </div>
         <div className="interview-budget">
@@ -191,7 +197,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
         <span style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="interview-layout">
+      <WorkflowGrid className="interview-layout">
         {session.status === "in_progress" && currentQuestion ? (
           <form className="question-card" onSubmit={saveAnswer}>
             <div className="question-meta">
@@ -254,11 +260,11 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
 
             {answerError ? <p className="form-error">{answerError}</p> : null}
 
-            <div className="question-actions">
-              <button className="button" disabled={!answer.trim()} type="submit">
-                Save and continue
-              </button>
-            </div>
+            <ActionRow
+              disabledReason={!answer.trim() ? "Choose an answer or describe your own before continuing." : null}
+              primary={<button className="button" disabled={!answer.trim()} type="submit">Save and continue</button>}
+              stickyOnMobile
+            />
           </form>
         ) : null}
 
@@ -290,14 +296,10 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
             ) : null}
 
             <AnsweredSummary session={session} />
-            <div className="analysis-actions">
-              <Link className="button" href={`/projects/${projectId}/contract`}>
-                Review the execution contract
-              </Link>
-              <button className="button secondary" onClick={restartInterview} type="button">
-                Answer again
-              </button>
-            </div>
+            <ActionRow
+              destructive={<button className="button secondary" onClick={restartInterview} type="button">Answer again</button>}
+              primary={<Link className="button" href={`/projects/${projectId}/contract`}>Review the execution contract</Link>}
+            />
           </section>
         ) : null}
 
@@ -310,17 +312,13 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
               .map((issue) => (
                 <p key={`${issue.questionId}-${issue.message}`}>{issue.message}</p>
               ))}
-            <div className="analysis-actions">
-              <button className="button" onClick={restartInterview} type="button">
-                Correct my answer
-              </button>
-              <Link className="button secondary" href="/projects/new">
-                Start a different project
-              </Link>
-            </div>
+            <ActionRow
+              back={<Link className="button secondary" href="/projects/new">Start a different project</Link>}
+              primary={<button className="button" onClick={restartInterview} type="button">Correct my answer</button>}
+            />
           </section>
         ) : null}
-      </div>
+      </WorkflowGrid>
     </InterviewShell>
   );
 }
