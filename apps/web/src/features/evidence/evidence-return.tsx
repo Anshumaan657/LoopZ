@@ -139,7 +139,7 @@ export function EvidenceReturn({ runId }: { runId: string }) {
         <Link href={loaded.run.repairAttempts > 0 ? `/runs/${loaded.run.runId}/repair` : `/projects/${loaded.run.projectId}/task?version=${loaded.run.contractVersionId}`}>{loaded.run.repairAttempts > 0 ? "Back to repair" : "Back to task"}</Link>
       </nav>
       <header className={styles.header}>
-        <p className="eyebrow">{loaded.run.repairAttempts > 0 ? `Phase 9 · Repair evidence ${loaded.run.repairAttempts}` : "Phase 7 · Evidence return"}</p>
+        <p className="eyebrow">{loaded.run.repairAttempts > 0 ? `Repair evidence · Attempt ${loaded.run.repairAttempts}` : "Execution evidence"}</p>
         <h1>{loaded.run.repairAttempts > 0 ? "Show what changed after the repair." : "Show what the agent actually produced."}</h1>
         <p>
           Paste original outputs. LoopZ will preserve claims separately from evidence and assess them against the confirmed contract next.
@@ -163,7 +163,7 @@ function EvidenceState({ message }: { message: string }) {
   return (
     <main className={styles.page}>
       <section className={styles.state}>
-        <p className="eyebrow">Phase 7 · Evidence return</p>
+        <p className="eyebrow">Execution evidence</p>
         <h1>Evidence return unavailable</h1>
         <p role="status">{message}</p>
         <Link className="button" href="/">Return home</Link>

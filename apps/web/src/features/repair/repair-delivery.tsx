@@ -155,7 +155,7 @@ export function RepairDelivery({ runId }: { runId: string }) {
 
   return <main className={styles.page}>
     <nav className={styles.nav} aria-label="Repair delivery navigation"><Link href="/">LoopZ</Link><Link href={`/runs/${runId}/assessment`}>Back to assessment</Link></nav>
-    <header className={styles.header}><p className="eyebrow">Phase 9 · Focused repair</p><h1>Fix only what remains unresolved.</h1><p>This repair preserves supported behavior and carries the exact evidence that triggered another attempt.</p></header>
+    <header className={styles.header}><p className="eyebrow">Focused repair</p><h1>Fix only what remains unresolved.</h1><p>This repair preserves supported behavior and carries the exact evidence that triggered another attempt.</p></header>
     <section className={styles.meta} aria-label="Repair details">
       <div><span>Attempt</span><strong>{delivery.repair.attempt} of {delivery.version.loopSpec.limits.maximumRepairAttempts}</strong></div>
       <div><span>Unresolved</span><strong>{delivery.repair.unresolvedCriteria.length}</strong></div>
@@ -174,5 +174,5 @@ export function RepairDelivery({ runId }: { runId: string }) {
 }
 
 function RepairState({ runId, message }: { runId: string; message: string }) {
-  return <main className={styles.page}><section className={styles.state}><p className="eyebrow">Phase 9 · Focused repair</p><h1>Repair unavailable</h1><p role="status">{message}</p><Link className="button" href={`/runs/${runId}/assessment`}>Return to assessment</Link></section></main>;
+  return <main className={styles.page}><section className={styles.state}><p className="eyebrow">Focused repair</p><h1>Repair unavailable</h1><p role="status">{message}</p><Link className="button" href={`/runs/${runId}/assessment`}>Return to assessment</Link></section></main>;
 }

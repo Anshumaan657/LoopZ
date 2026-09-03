@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { type FormEvent, useEffect, useState } from "react";
 
-import { interviewSessionSchema, type InterviewSession } from "@loopz/contracts/intake";
+import {
+  interviewSessionSchema,
+  type InterviewQuestion,
+  type InterviewSession,
+} from "@loopz/contracts/intake";
 import type { IntakeAnalysis } from "@loopz/core/intake";
 import {
   answerInterviewQuestion,
@@ -28,12 +32,28 @@ type LoadedInterview = {
   session: InterviewSession;
 };
 
-const taskTypeLabels = {
-  new_web_application: "New web application",
-  landing_page: "Landing page",
-  existing_app_feature: "Existing-app feature",
-  bug_fix: "Bug fix",
-} as const;
+const textAnswerOptions: Partial<Record<InterviewQuestion["category"], string[]>> = {
+  primary_flow: ["Complete the main user journey", "Improve an existing journey", "Help me decide"],
+  roles_and_access: ["One public user type", "Signed-in users and admins", "Preserve existing roles"],
+  authentication: ["Use the existing sign-in", "Email and password", "No sign-in for this version"],
+  data_handling: ["Store only essential data", "Use the existing data model", "Do not persist data"],
+  external_integrations: ["Use the existing integration", "Use a local mock", "Exclude the integration"],
+  repository_context: ["Start a new project", "Use an existing repository and preserve its stack", "I’m not sure yet"],
+  verification: ["Run existing tests and the production build", "Add automated tests for the changed flow", "Verify the flow in a browser"],
+  scope: ["Build the smallest working version", "Include the complete described flow", "Help me narrow the scope"],
+  visual_behavior: ["Use the existing design system", "Create a responsive monochrome interface", "Match a reference I will provide"],
+};
+
+type DisplayAnswerOption = { value: string; label: string; description?: string };
+
+function quickAnswerOptions(question: InterviewQuestion): DisplayAnswerOption[] {
+  if (question.answerKind === "choice") return question.options;
+  return (textAnswerOptions[question.category] ?? [
+    "Use the safest practical default",
+    "Preserve the existing behavior",
+    "Help me decide",
+  ]).map((value) => ({ value, label: value }));
+}
 
 function persistInterview(draft: StoredProjectDraft, session: InterviewSession) {
   const updatedDraft = { ...draft, interview: session };
@@ -45,6 +65,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
   const [loaded, setLoaded] = useState<LoadedInterview | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [answer, setAnswer] = useState("");
+  const [customAnswer, setCustomAnswer] = useState(false);
   const [answerError, setAnswerError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -116,10 +137,25 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
     if (!currentQuestion) return;
 
     try {
-      const nextSession = answerInterviewQuestion(session, answer);
+      const sessionWithCustomOption =
+        customAnswer && currentQuestion.answerKind === "choice"
+          ? {
+              ...session,
+              questions: session.questions.map((question) =>
+                question.id === currentQuestion.id
+                  ? {
+                      ...question,
+                      options: [...question.options, { value: answer, label: answer }],
+                    }
+                  : question,
+              ),
+            }
+          : session;
+      const nextSession = answerInterviewQuestion(sessionWithCustomOption, answer);
       const nextDraft = persistInterview(draft, nextSession);
       setLoaded({ draft: nextDraft, session: nextSession });
       setAnswer("");
+      setCustomAnswer(false);
       setAnswerError(null);
     } catch (error) {
       setAnswerError(error instanceof Error ? error.message : "The answer could not be saved.");
@@ -132,6 +168,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
     const nextDraft = persistInterview(draft, nextSession);
     setLoaded({ draft: nextDraft, session: nextSession });
     setAnswer("");
+    setCustomAnswer(false);
     setAnswerError(null);
   }
 
@@ -139,7 +176,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
     <InterviewShell>
       <header className="interview-header">
         <div>
-          <p className="eyebrow">Phase 4 · Risk-based clarification</p>
+          <p className="eyebrow">Clarify the build</p>
           <h1>Resolve only what changes the outcome.</h1>
         </div>
         <div className="interview-budget">
@@ -155,29 +192,6 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
       </div>
 
       <div className="interview-layout">
-        <aside className="interview-context">
-          <span className="aside-label">Confirmed intake</span>
-          <h2>{draft.analysis.intent.goal.value}</h2>
-          <dl>
-            <div>
-              <dt>Task type</dt>
-              <dd>{taskTypeLabels[draft.analysis.intent.taskType.value]}</dd>
-            </div>
-            <div>
-              <dt>Mode</dt>
-              <dd>{draft.intake.mode === "geek" ? "Geek" : "Guided"}</dd>
-            </div>
-            <div>
-              <dt>Question limit</dt>
-              <dd>Maximum {session.questionBudget}</dd>
-            </div>
-          </dl>
-          <details>
-            <summary>Original request</summary>
-            <p>{draft.intake.originalPrompt}</p>
-          </details>
-        </aside>
-
         {session.status === "in_progress" && currentQuestion ? (
           <form className="question-card" onSubmit={saveAnswer}>
             <div className="question-meta">
@@ -187,20 +201,17 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
               <span>{currentQuestion.category.replaceAll("_", " ")}</span>
             </div>
             <h2>{currentQuestion.prompt}</h2>
-            <p>{currentQuestion.rationale}</p>
-
-            {currentQuestion.answerKind === "choice" ? (
-              <fieldset className="answer-options">
-                <legend>Choose one answer</legend>
-                {currentQuestion.options.map((option) => (
+            <fieldset className="answer-options">
+              <legend>Choose the closest answer</legend>
+              {quickAnswerOptions(currentQuestion).map((option) => (
                   <label
-                    className={`answer-option ${answer === option.value ? "selected" : ""}`}
+                    className={`answer-option ${!customAnswer && answer === option.value ? "selected" : ""}`}
                     key={option.value}
                   >
                     <input
-                      checked={answer === option.value}
+                      checked={!customAnswer && answer === option.value}
                       name="answer"
-                      onChange={() => setAnswer(option.value)}
+                      onChange={() => { setCustomAnswer(false); setAnswer(option.value); }}
                       required
                       type="radio"
                       value={option.value}
@@ -211,10 +222,21 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
                     </span>
                   </label>
                 ))}
-              </fieldset>
-            ) : (
+              <label className={`answer-option ${customAnswer ? "selected" : ""}`}>
+                <input
+                  checked={customAnswer}
+                  name="answer"
+                  onChange={() => { setCustomAnswer(true); setAnswer(""); }}
+                  type="radio"
+                  value="custom"
+                />
+                <span><strong>Describe my answer</strong><small>Add context in your own words.</small></span>
+              </label>
+            </fieldset>
+
+            {customAnswer ? (
               <div className="field-group">
-                <label htmlFor="interview-answer">Your answer</label>
+                <label htmlFor="interview-answer">Describe your answer</label>
                 <textarea
                   autoFocus
                   id="interview-answer"
@@ -228,15 +250,14 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
                 />
                 <span className="answer-count">{answer.length}/2000</span>
               </div>
-            )}
+            ) : null}
 
             {answerError ? <p className="form-error">{answerError}</p> : null}
 
             <div className="question-actions">
-              <button className="button" type="submit">
+              <button className="button" disabled={!answer.trim()} type="submit">
                 Save and continue
               </button>
-              <span>Progress is saved in this browser.</span>
             </div>
           </form>
         ) : null}
@@ -328,12 +349,6 @@ function AnsweredSummary({ session }: { session: InterviewSession }) {
 
 function InterviewShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="interview-page">
-      <nav className="intake-nav" aria-label="Interview navigation">
-        <Link href="/">LoopZ</Link>
-        <Link href="/projects/new">New project</Link>
-      </nav>
-      {children}
-    </main>
+    <main className="interview-page">{children}</main>
   );
 }

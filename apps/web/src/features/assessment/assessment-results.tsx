@@ -196,7 +196,7 @@ export function AssessmentResults({ runId }: { runId: string }) {
         <Link href={`/runs/${runId}/evidence`}>Review returned evidence</Link>
       </nav>
       <header className={styles.header}>
-        <p className="eyebrow">Phase 8 · Evidence assessment</p>
+        <p className="eyebrow">Evidence assessment</p>
         <h1>{outcomeTitle(assessment.outcome)}</h1>
         <p>
           LoopZ assessed what was submitted against the confirmed contract. It did not access the repository or rerun these commands.
@@ -329,5 +329,5 @@ function statusTone(status: CriterionStatus): "positive" | "warning" | "negative
 }
 
 function AssessmentState({ message }: { message: string }) {
-  return <main className={styles.page}><section className={styles.state}><p className="eyebrow">Phase 8 · Evidence assessment</p><h1>Assessment unavailable</h1><p role="status">{message}</p><Link className="button" href="/">Return home</Link></section></main>;
+  return <main className={styles.page}><section className={styles.state}><p className="eyebrow">Evidence assessment</p><h1>Assessment unavailable</h1><p role="status">{message}</p><Link className="button" href="/">Return home</Link></section></main>;
 }

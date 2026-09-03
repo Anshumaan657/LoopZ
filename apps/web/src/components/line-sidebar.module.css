@@ -1,0 +1,60 @@
+.sidebar {
+  --line-accent: #fff;
+  --line-text: #8a8a8a;
+  --line-marker: #4a4a4a;
+  position: sticky;
+  top: 104px;
+  align-self: start;
+  min-width: 210px;
+  padding: 8px 0 8px 44px;
+}
+
+.list {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item { position: relative; }
+
+.button {
+  --effect: 0;
+  position: relative;
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  padding: 4px 0;
+  background: transparent;
+  color: var(--line-text);
+  font-size: .95rem;
+  text-align: left;
+  cursor: pointer;
+  transform: translateX(calc(var(--effect) * 14px));
+  transition: color 120ms var(--ease), transform 120ms var(--ease);
+}
+
+.button::before {
+  content: "";
+  position: absolute;
+  right: calc(100% + 4px);
+  width: 40px;
+  height: 1px;
+  background: var(--line-marker);
+  transform: scaleX(calc(.72 + var(--effect) * .28));
+  transform-origin: right;
+}
+
+.button:hover:not(:disabled), .button[aria-current="step"] { color: var(--line-accent); }
+.button[aria-current="step"] { font-weight: 680; }
+.button[aria-current="step"]::before { background: var(--line-accent); }
+.button:disabled { color: #454545; cursor: not-allowed; }
+.button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 3px; }
+.index { color: currentColor; font: 600 .7rem/1 ui-monospace, monospace; opacity: .65; }
+
+@media (max-width: 760px) { .sidebar { display: none; } }
+@media (prefers-reduced-motion: reduce) { .button { transform: none !important; transition: none; } }

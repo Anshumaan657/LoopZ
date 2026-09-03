@@ -52,6 +52,17 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
     );
   }
 
+  function toggleAllApprovals(checked: boolean) {
+    if (!loaded) return;
+    setApprovedActions(
+      checked
+        ? loaded.draft.safety.plannedActions
+            .filter((action) => action.requiresApproval)
+            .map((action) => action.action)
+        : [],
+    );
+  }
+
   async function confirm() {
     if (!loaded || !certified) return;
     setWorking(true);
@@ -85,16 +96,15 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
   return (
     <main className={styles.page}>
       <nav className={styles.nav}>
-        <Link href="/">LoopZ</Link>
         <Link href={`/projects/${projectId}/contract`}>Back to contract review</Link>
       </nav>
 
       <header className={styles.header}>
-        <p className="eyebrow">Phase 5.5 · Confirmation</p>
-        <h1>Freeze what the agent is allowed to build.</h1>
+        <p className="eyebrow">Final confirmation</p>
+        <h1>One final check before your agent gets to work.</h1>
         <p>
-          Confirmation creates a content-hashed version. Later edits create a new version instead
-          of changing this snapshot.
+          Review the important boundaries, approve sensitive actions, and lock a version you can
+          confidently send to your coding agent.
         </p>
       </header>
 
@@ -156,6 +166,20 @@ export function ContractConfirmation({ projectId }: { projectId: string }) {
                 <span><strong>{action.category.replaceAll("_", " ")}</strong>{action.action}</span>
               </label>
             ))}
+            <label className={`${styles.check} ${styles.approveAll}`}>
+              <input
+                checked={requiredActions.length === 0 || requiredActions.every((action) => approvedActions.includes(action.action))}
+                disabled={requiredActions.length === 0}
+                onChange={(event) => toggleAllApprovals(event.target.checked)}
+                type="checkbox"
+              />
+              <span>
+                <strong>Mark all approved</strong>
+                {requiredActions.length === 0
+                  ? "No human-gated actions need approval for this contract."
+                  : "Approve every human-gated action listed above."}
+              </span>
+            </label>
             <label className={`${styles.check} ${styles.certify}`}>
               <input
                 checked={certified}
@@ -201,7 +225,7 @@ function ConfirmationState({ projectId, message }: { projectId: string; message:
   return (
     <main className={styles.page}>
       <section className={styles.state}>
-        <p className="eyebrow">Phase 5.5</p>
+        <p className="eyebrow">Contract confirmation</p>
         <h1>Confirmation unavailable</h1>
         <p>{message}</p>
         <Link className="button" href={`/projects/${projectId}/contract`}>

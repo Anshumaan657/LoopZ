@@ -1,1 +1,25 @@
-.page{width:min(980px,calc(100% - 2rem));margin:0 auto;padding:1.5rem 0 5rem}.nav{display:flex;justify-content:space-between;gap:1rem;color:var(--muted);font-size:.9rem}.nav a:first-child{color:var(--text);font-size:1.05rem;font-weight:800}.header{padding:4.5rem 0 2rem}.header h1,.state h1{max-width:18ch;font-size:clamp(2.4rem,6vw,4.8rem)}.header>p:last-child{max-width:46rem}.meta{display:grid;grid-template-columns:.6fr .6fr .6fr 1.5fr;gap:.65rem}.meta div{min-width:0;padding:.85rem;border:1px solid var(--border);border-radius:.8rem;background:rgba(10,25,21,.8)}.meta span{display:block;color:var(--muted);font-size:.7rem;text-transform:uppercase}.meta strong,.meta code{display:block;margin-top:.3rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.warning{margin:1rem 0;padding:1rem;border:1px solid rgba(255,204,102,.3);border-radius:.8rem;background:rgba(255,204,102,.06);color:var(--muted)}.warning strong{color:var(--text)}.preview{margin-top:1.5rem;padding:1rem;border:1px solid var(--border);border-radius:1rem;background:var(--surface)}.preview>div:first-child{display:flex;justify-content:space-between;gap:1rem}.preview>div:first-child span{color:var(--muted)}.preview pre{max-height:38rem;overflow:auto;padding:1rem;border-radius:.7rem;background:#050b09;color:#cfe8dc;white-space:pre-wrap;overflow-wrap:anywhere}.actions{display:flex;flex-wrap:wrap;gap:.75rem}.success{color:var(--accent)}.error{color:#ffaaaa}.next,.state{margin-top:2rem;padding:1.3rem;border:1px solid var(--border);border-radius:1rem}.next h2{max-width:24ch}.nav a:focus-visible,.preview pre:focus-visible,.preview button:focus-visible,.next button:focus-visible{outline:3px solid var(--accent);outline-offset:3px}@media(max-width:680px){.page{width:min(100% - 1rem,980px)}.header{padding:3rem 0 1.5rem}.meta{grid-template-columns:1fr 1fr}.preview>div:first-child{display:grid}.actions{display:grid}.actions>*{width:100%}}@media(max-width:420px){.meta{grid-template-columns:1fr}}
+.page { width:min(900px,calc(100% - 32px)); margin:0 auto; padding:24px 0 96px; }
+.nav { min-height:40px; display:flex; justify-content:flex-end; gap:16px; color:var(--muted); font-size:.82rem; }
+.nav a:first-child { display:none; }
+.header { max-width:700px; padding:56px 0 32px; }
+.header h1,.state h1 { max-width:18ch; }
+.header>p:last-child { max-width:640px; }
+.meta { display:grid; grid-template-columns:.6fr .6fr .6fr 1.5fr; gap:0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.meta div { min-width:0; padding:16px; }
+.meta div + div { border-left:1px solid var(--border); }
+.meta span { display:block; color:var(--muted-soft); font-size:.68rem; text-transform:uppercase; }
+.meta strong,.meta code { display:block; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.warning { margin:24px 0; padding:16px 0; border-bottom:1px solid var(--border); color:var(--muted); }
+.warning strong { color:var(--text); }
+.preview { margin-top:32px; overflow:hidden; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); }
+.preview>div:first-child { display:flex; justify-content:space-between; gap:16px; padding:16px; border-bottom:1px solid var(--border); }
+.preview>div:first-child span { color:var(--muted); }
+.preview pre { max-height:38rem; overflow:auto; margin:0; padding:20px; background:#050505; color:#ddd; white-space:pre-wrap; overflow-wrap:anywhere; }
+.actions { display:flex; flex-wrap:wrap; gap:12px; padding:16px; border-top:1px solid var(--border); }
+.preview>div:last-child { min-height:24px; padding:0 16px 12px; }
+.success { color:var(--muted); }
+.error { color:var(--danger); }
+.next,.state { margin-top:40px; padding-top:28px; border-top:1px solid var(--border); }
+.next h2 { max-width:24ch; }
+@media(max-width:680px){.page{width:min(100% - 24px,900px)}.header{padding-top:40px}.meta{grid-template-columns:1fr 1fr}.meta div:nth-child(3){border-left:0;border-top:1px solid var(--border)}.meta div:nth-child(4){border-top:1px solid var(--border)}.preview>div:first-child{display:grid}.actions{display:grid}.actions>*{width:100%}}
+@media(max-width:420px){.meta{grid-template-columns:1fr}.meta div + div{border-left:0;border-top:1px solid var(--border)}}

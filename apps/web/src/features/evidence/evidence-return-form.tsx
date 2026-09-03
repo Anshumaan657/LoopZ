@@ -113,7 +113,7 @@ export function EvidenceReturnForm({
       <section className={styles.card}>
         <p className={styles.step}>4 · Criterion claims</p>
         <h2>What did the agent claim for each requirement?</h2>
-        <p>This is a claim, not verification. LoopZ will assess the submitted evidence in Phase 8.</p>
+        <p>This is a claim, not verification. LoopZ will assess the evidence after submission.</p>
         <div className={styles.criteria}>
           {criteria.map((criterion) => (
             <article key={criterion.id}>

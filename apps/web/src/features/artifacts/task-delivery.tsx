@@ -172,7 +172,7 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
       </nav>
 
       <header className={styles.header}>
-        <p className="eyebrow">Phase 6 · Task delivery</p>
+        <p className="eyebrow">Agent task</p>
         <h1>Your confirmed build task is ready.</h1>
         <p>Choose a format, preview the complete instruction, then copy or download that exact text.</p>
       </header>
@@ -278,7 +278,7 @@ function DeliveryState({ projectId, message }: { projectId: string; message: str
   return (
     <main className={styles.page}>
       <section className={styles.state}>
-        <p className="eyebrow">Phase 6 · Task delivery</p>
+        <p className="eyebrow">Agent task</p>
         <h1>Task delivery unavailable</h1>
         <p role="status">{message}</p>
         <Link className="button" href={`/projects/${projectId}/contract/confirm`}>Return to confirmation</Link>

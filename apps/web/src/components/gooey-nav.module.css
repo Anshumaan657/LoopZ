@@ -1,0 +1,107 @@
+.container {
+  --gooey-active: #ffffff;
+  --gooey-inactive: #686868;
+  position: relative;
+  display: inline-flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.nav,
+.list {
+  display: flex;
+  align-items: center;
+}
+
+.nav {
+  position: relative;
+  padding: 4px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.list {
+  position: relative;
+  z-index: 2;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  border-radius: 999px;
+}
+
+.link {
+  position: relative;
+  z-index: 2;
+  min-width: 112px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 10px 22px;
+  color: var(--gooey-inactive);
+  font-weight: 680;
+  transition: color var(--motion-fast) var(--ease);
+}
+
+.link:hover { color: var(--text); }
+.link:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.active .link { color: #080808; }
+
+.pill {
+  position: absolute;
+  z-index: 1;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 999px;
+  background: var(--gooey-active);
+  pointer-events: none;
+  transition:
+    left var(--gooey-time, 450ms) var(--ease),
+    width var(--gooey-time, 450ms) var(--ease);
+}
+
+.particleLayer {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.particle {
+  --particle-x: 0px;
+  --particle-y: 0px;
+  --particle-time: 600ms;
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--particle-color, #fff);
+  animation: particle-pop var(--particle-time) var(--ease) both;
+}
+
+@keyframes particle-pop {
+  0% { opacity: 0; transform: translate(0, 0) scale(.4); }
+  24% { opacity: .75; }
+  100% { opacity: 0; transform: translate(var(--particle-x), var(--particle-y)) scale(0); }
+}
+
+@media (max-width: 420px) {
+  .container { width: 100%; }
+  .nav, .list { width: 100%; }
+  .item { flex: 1; }
+  .link { min-width: 0; width: 100%; padding-inline: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill { transition: none; }
+  .particleLayer { display: none; }
+}

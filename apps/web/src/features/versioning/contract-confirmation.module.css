@@ -1,11 +1,11 @@
-.page { width: min(1100px, calc(100% - 2rem)); margin: 0 auto; padding: 1.5rem 0 5rem; }
-.nav { display: flex; justify-content: space-between; color: var(--muted); }
-.nav a:first-child { color: var(--text); font-weight: 800; font-size: 1.05rem; }
+.page { width: min(1100px, calc(100% - 2rem)); min-height: calc(100svh - 137px); margin: 0 auto; padding: 1.5rem 0 5rem; }
+.nav { display: flex; justify-content: flex-end; color: var(--muted); }
 .header { padding: 4.5rem 0 2.5rem; }
-.header h1, .state h1 { max-width: 16ch; font-size: clamp(2.5rem, 6vw, 5rem); }
+.header h1, .state h1 { max-width: 18ch; font-size: clamp(2.25rem, 5vw, 4rem); }
 .header > p:last-child { max-width: 46rem; }
-.layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
-.card, .confirmed, .history, .state { border: 1px solid var(--border); border-radius: 1.15rem; padding: clamp(1.1rem, 3vw, 1.6rem); background: rgba(10, 25, 21, .84); }
+.layout { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(1rem, 3vw, 2rem); align-items: start; }
+.card, .confirmed, .history, .state { border: 1px solid var(--border); border-radius: var(--radius-md); padding: clamp(1.25rem, 3vw, 2rem); background: var(--surface); transition: border-color var(--motion-fast) var(--ease), transform var(--motion-fast) var(--ease); }
+.card:hover { border-color: var(--border-strong); }
 .card h2, .confirmed h2, .history h2 { margin-top: 0; }
 .card h3 { margin-top: 1.6rem; font-size: .95rem; }
 .card ul { color: var(--muted); line-height: 1.55; }
@@ -17,7 +17,8 @@
 .check input { width: 1.1rem; height: 1.1rem; margin-top: .2rem; accent-color: var(--accent); }
 .check span { display: grid; gap: .25rem; color: var(--muted); font-size: .85rem; line-height: 1.45; }
 .check strong { color: var(--text); text-transform: capitalize; }
-.certify { margin-top: 1.25rem; border-color: rgba(101, 242, 173, .35); }
+.certify { margin-top: 1.25rem; border-color: var(--border-strong); }
+.approveAll { margin-top: 1.1rem; border-color: var(--border-strong); background: var(--surface-strong); }
 .card button { width: 100%; margin-top: .5rem; }
 .card button:disabled { opacity: .45; cursor: not-allowed; }
 .error { color: #ffaaaa; }
