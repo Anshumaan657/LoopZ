@@ -1,17 +1,19 @@
-import Link from "next/link";
-
 import { IdeaIntakeForm } from "../../../features/intake/idea-intake-form";
+import { WorkflowProgress } from "../../../components/workflow-progress";
 
-export default function NewProjectPage() {
+export default async function NewProjectPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const requestedMode = Array.isArray(query.mode) ? query.mode[0] : query.mode;
+  const initialMode = requestedMode === "geek" ? "geek" : "guided";
   return (
     <main className="intake-page">
-      <nav className="intake-nav" aria-label="Project creation navigation">
-        <Link href="/">LoopZ</Link>
-        <span>Phase 3 · Idea intake</span>
-      </nav>
-
       <header className="intake-hero">
-        <p className="eyebrow">Turn a rough idea into an executable brief</p>
+        <p className="eyebrow">Start with your idea</p>
+        <WorkflowProgress stage="Idea" next="Clarify the decisions that change the build" />
         <h1>What do you want your coding agent to build?</h1>
         <p>
           Explain it naturally. LoopZ will identify the task, preserve your intent,
@@ -19,7 +21,7 @@ export default function NewProjectPage() {
         </p>
       </header>
 
-      <IdeaIntakeForm />
+      <IdeaIntakeForm initialMode={initialMode} />
     </main>
   );
 }

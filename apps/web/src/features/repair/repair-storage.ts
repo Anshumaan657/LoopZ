@@ -2,6 +2,7 @@ import { repairTaskSchema, type RepairTask } from "@loopz/contracts/repair";
 import { runSchema, type Run } from "@loopz/contracts/run";
 
 import { runStorageKey, saveTaskRun, taskRunStorageKey } from "../artifacts/task-storage";
+import { safeGetItem, safeSetItem, safeRemoveItem, safeParseJSON, StorageCorruptedError } from "../../lib/storage";
 
 export const MAX_REPAIRS_PER_RUN = 2;
 
@@ -14,10 +15,10 @@ export function repairDeliveryKey(repairId: string): string {
 }
 
 export function loadRepairTasks(runId: string): RepairTask[] {
-  const raw = localStorage.getItem(repairStorageKey(runId));
+  const raw = safeGetItem(repairStorageKey(runId));
   if (!raw) return [];
-  const parsed: unknown = JSON.parse(raw);
-  if (!Array.isArray(parsed)) throw new Error("Saved repair history is corrupted.");
+  const parsed = safeParseJSON<unknown>(raw, repairStorageKey(runId));
+  if (!Array.isArray(parsed)) throw new StorageCorruptedError("Saved repair history is corrupted.");
   const repairs = parsed.map((item) => repairTaskSchema.parse(item));
   if (repairs.length > MAX_REPAIRS_PER_RUN) throw new Error("Saved repair history exceeds its limit.");
   const ids = new Set<string>();
@@ -69,31 +70,34 @@ export function persistRepairTask(
   const historyKey = repairStorageKey(run.runId);
   const contractRunKey = taskRunStorageKey(run.projectId, run.contractVersionId);
   const indexedRunKey = runStorageKey(run.runId);
-  const oldHistory = localStorage.getItem(historyKey);
-  const oldContractRun = localStorage.getItem(contractRunKey);
-  const oldIndexedRun = localStorage.getItem(indexedRunKey);
-  localStorage.setItem(historyKey, JSON.stringify(repairs));
+  const oldHistory = safeGetItem(historyKey);
+  const oldContractRun = safeGetItem(contractRunKey);
+  const oldIndexedRun = safeGetItem(indexedRunKey);
+  safeSetItem(historyKey, JSON.stringify(repairs));
   try {
     saveTaskRun(updatedRun);
   } catch (cause) {
-    if (oldHistory === null) localStorage.removeItem(historyKey);
-    else localStorage.setItem(historyKey, oldHistory);
-    if (oldContractRun === null) localStorage.removeItem(contractRunKey);
-    else localStorage.setItem(contractRunKey, oldContractRun);
-    if (oldIndexedRun === null) localStorage.removeItem(indexedRunKey);
-    else localStorage.setItem(indexedRunKey, oldIndexedRun);
+    if (oldHistory === null) safeRemoveItem(historyKey);
+    else safeSetItem(historyKey, oldHistory);
+    if (oldContractRun === null) safeRemoveItem(contractRunKey);
+    else safeSetItem(contractRunKey, oldContractRun);
+    if (oldIndexedRun === null) safeRemoveItem(indexedRunKey);
+    else safeSetItem(indexedRunKey, oldIndexedRun);
     throw cause;
   }
   return { run: updatedRun, repairs };
 }
 
 export function markRepairDelivered(repair: RepairTask, deliveredAt: string): void {
-  if (!/^\d{4}-\d{2}-\d{2}T/.test(deliveredAt)) throw new Error("Repair delivery requires an ISO timestamp.");
-  localStorage.setItem(repairDeliveryKey(repair.repairId), deliveredAt);
+  const parsed = new Date(deliveredAt);
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(deliveredAt) || Number.isNaN(parsed.valueOf()) || parsed.toISOString() !== deliveredAt) {
+    throw new Error("Repair delivery requires a valid canonical ISO timestamp (for example, 2024-01-15T10:30:00.000Z).");
+  }
+  safeSetItem(repairDeliveryKey(repair.repairId), deliveredAt);
 }
 
 export function wasRepairDelivered(repair: RepairTask): boolean {
-  return localStorage.getItem(repairDeliveryKey(repair.repairId)) !== null;
+  return safeGetItem(repairDeliveryKey(repair.repairId)) !== null;
 }
 
 export function beginRepairEvidenceReturn(runInput: Run, repair: RepairTask, updatedAt: string): Run {
@@ -108,7 +112,7 @@ export function beginRepairEvidenceReturn(runInput: Run, repair: RepairTask, upd
 }
 
 export function deleteRepairHistory(runId: string): void {
-  for (const repair of loadRepairTasks(runId)) localStorage.removeItem(repairDeliveryKey(repair.repairId));
-  localStorage.removeItem(repairStorageKey(runId));
-  localStorage.removeItem(`loopz:run:${runId}:resolution`);
+  for (const repair of loadRepairTasks(runId)) safeRemoveItem(repairDeliveryKey(repair.repairId));
+  safeRemoveItem(repairStorageKey(runId));
+  safeRemoveItem(`loopz:run:${runId}:resolution`);
 }

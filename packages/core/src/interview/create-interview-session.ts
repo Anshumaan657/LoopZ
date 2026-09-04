@@ -132,7 +132,7 @@ function inferredMissingInformation(analysis: AcceptedIntakeAnalysis): MissingIn
   const prompt = analysis.intent.originalPrompt.toLocaleLowerCase();
   const inferred: MissingInformation[] = [];
 
-  if (/\b(client|employer|company|third[- ]party|production system)\b/.test(prompt)) {
+  if (/\b(employer|company|third[- ]party|production system)\b/.test(prompt) || /\bclient\b(?!\s*-?\s*side\b)/.test(prompt)) {
     inferred.push({
       category: "authorization",
       reason: "The request may affect a system owned or controlled by another party.",
@@ -364,6 +364,7 @@ export function answerInterviewQuestion(
   sessionInput: InterviewSession,
   valueInput: string,
   answeredAt = new Date().toISOString(),
+  detailsInput = "",
 ): InterviewSession {
   const session = interviewSessionSchema.parse(sessionInput);
 
@@ -375,7 +376,9 @@ export function answerInterviewQuestion(
   if (!question) throw new Error("The current interview question is missing.");
 
   const value = valueInput.trim();
+  const details = detailsInput.trim();
   if (value.length < 2) throw new Error("Please provide a meaningful answer.");
+  if (details.length > 2000) throw new Error("Additional loop details must be 2,000 characters or fewer.");
   if (
     question.answerKind === "choice" &&
     !question.options.some((option) => option.value === value)
@@ -383,7 +386,12 @@ export function answerInterviewQuestion(
     throw new Error("Choose one of the available answers.");
   }
 
-  const answer = { questionId: question.id, value, answeredAt };
+  const answer = {
+    questionId: question.id,
+    value,
+    ...(details ? { details } : {}),
+    answeredAt,
+  };
   const issues = evaluateAnswer(question, value, session.intentTaskType);
   const answers = [...session.answers, answer];
   const hasBlockingIssue = issues.some((issue) => issue.severity === "blocking");

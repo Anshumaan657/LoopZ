@@ -17,6 +17,8 @@ import type { ConfirmedContractVersion } from "@loopz/contracts/versioning";
 import { applyAssessmentCorrection, compileAssessment } from "@loopz/core/assessment";
 import { determineRunNextStep, resolveRun } from "@loopz/core";
 
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
 import { loadTaskRunById } from "../artifacts/task-storage";
 import { loadEvidenceSubmissions, validateEvidenceHistoryForRun } from "../evidence/evidence-storage";
 import { loadContractVersions } from "../versioning/version-storage";
@@ -30,6 +32,7 @@ import {
   persistAssessment,
   validateAssessmentHistoryForRun,
 } from "./assessment-storage";
+import { canReadExistingAssessment } from "./assessment-access";
 import styles from "./assessment-results.module.css";
 
 type LoadedAssessment = {
@@ -110,7 +113,7 @@ export function AssessmentResults({ runId }: { runId: string }) {
             currentRun = saved.run;
             history = saved.assessments;
           }
-        } else if (run.state !== "assessed" && run.state !== "completed" && run.state !== "blocked") {
+        } else if (!canReadExistingAssessment(run.state)) {
           throw new Error("Assessment history exists but the run state is inconsistent.");
         }
         const resolution = loadRunResolution(run.runId);
@@ -165,6 +168,9 @@ export function AssessmentResults({ runId }: { runId: string }) {
   const nextStep = loaded.run.state === "assessed"
     ? determineRunNextStep(loaded.run, loaded.version, assessment)
     : null;
+  const attentionResults = assessment.criteria.filter(
+    (result) => result.status !== "verified_by_submitted_evidence" && result.status !== "not_applicable",
+  );
 
   function finishRun() {
     if (!loaded || !assessment) return;
@@ -196,35 +202,37 @@ export function AssessmentResults({ runId }: { runId: string }) {
         <Link href={`/runs/${runId}/evidence`}>Review returned evidence</Link>
       </nav>
       <header className={styles.header}>
-        <p className="eyebrow">Phase 8 · Evidence assessment</p>
+        <p className="eyebrow">Evidence assessment</p>
+        <WorkflowProgress stage="Assess" next="Complete the run or generate a focused repair" />
         <h1>{outcomeTitle(assessment.outcome)}</h1>
         <p>
           LoopZ assessed what was submitted against the confirmed contract. It did not access the repository or rerun these commands.
         </p>
       </header>
 
-      <section className={styles.summary} aria-label="Assessment summary">
-        <div><span>Supported</span><strong>{counts.verified_by_submitted_evidence}</strong></div>
-        <div><span>Needs attention</span><strong>{assessment.criteria.length - counts.verified_by_submitted_evidence - counts.not_applicable}</strong></div>
-        <div><span>Revision</span><strong>v{assessment.assessmentVersion}</strong></div>
-      </section>
-
-      <aside className={styles.boundary} role="note">
-        <strong>Evidence assessment, not independent verification.</strong> Agent claims alone are never marked as supported by evidence.
-      </aside>
-      {error ? <p className={styles.error} role="alert">{error}</p> : null}
-
-      {(assessment.contradictions.length > 0 || assessment.risks.length > 0) ? (
-        <section className={styles.findings} aria-labelledby="findings-title">
-          <h2 id="findings-title">Findings</h2>
-          <ul>
-            {assessment.contradictions.map((item) => <li key={item}>{item}</li>)}
-            {assessment.risks.map((item) => <li key={item}>{item}</li>)}
-          </ul>
+      <WorkflowGrid aside={<div className={styles.asideStack}>
+        <section className={styles.summary} aria-label="Assessment summary">
+          <div><span>Supported</span><strong>{counts.verified_by_submitted_evidence}</strong></div>
+          <div><span>Needs attention</span><strong>{attentionResults.length}</strong></div>
+          <div><span>Revision</span><strong>v{assessment.assessmentVersion}</strong></div>
         </section>
-      ) : null}
+        <aside className={styles.boundary} role="note">
+          <strong>Evidence assessment, not independent verification.</strong> Agent claims alone are never marked as supported by evidence.
+        </aside>
+      </div>}>
+        {error ? <p className={styles.error} role="alert">{error}</p> : null}
 
-      <section className={styles.criteria} aria-labelledby="criteria-title">
+        {(attentionResults.length > 0 || assessment.contradictions.length > 0 || assessment.risks.length > 0) ? (
+          <section className={styles.findings} aria-labelledby="findings-title">
+            <h2 id="findings-title">Attention summary</h2>
+            <ul>
+              {attentionResults.map((result) => <li key={result.criterionId}><code>{result.criterionId}</code><span><strong>{LABELS[result.status]}.</strong> {result.explanation}</span></li>)}
+            </ul>
+            {(assessment.contradictions.length > 0 || assessment.risks.length > 0) ? <details><summary>Inspect assessment-wide flags</summary><ul>{assessment.contradictions.map((item) => <li key={item}>{item}</li>)}{assessment.risks.map((item) => <li key={item}>{item}</li>)}</ul></details> : null}
+          </section>
+        ) : null}
+
+        <section className={styles.criteria} aria-labelledby="criteria-title">
         <div className={styles.sectionHeading}>
           <div><p className="eyebrow">Traceability</p><h2 id="criteria-title">Criterion results</h2></div>
           <p>{assessment.criteria.length} criteria assessed</p>
@@ -258,31 +266,41 @@ export function AssessmentResults({ runId }: { runId: string }) {
             </article>
           );
         })}
-      </section>
-
-      <section className={styles.next}>
-        <p className="eyebrow">Recommended next action</p>
-        <h2>{assessment.recommendedNextAction}</h2>
-        <div className={styles.actions}>
-          {loaded.resolution ? <span className={styles.ready}>Run {loaded.resolution.state}: {loaded.resolution.explanation}</span> : null}
-          {!loaded.resolution && nextStep === "complete" ? <button className="button" onClick={finishRun} type="button">Mark run complete</button> : null}
-          {!loaded.resolution && nextStep === "repair" ? <Link className="button" href={`/runs/${runId}/repair`}>Generate focused repair</Link> : null}
-          {!loaded.resolution && nextStep === "more_evidence" ? <button className="button" onClick={requestMoreEvidence} type="button">Submit missing evidence</button> : null}
-          {!loaded.resolution && nextStep === "block" ? <button className="button" onClick={finishRun} type="button">Stop and record outcome</button> : null}
-          <Link className="button secondary" href={`/runs/${runId}/evidence`}>Review source evidence</Link>
-        </div>
-      </section>
-
-      {assessment.corrections.length > 0 ? (
-        <section className={styles.audit} aria-labelledby="audit-title">
-          <h2 id="audit-title">Correction audit trail</h2>
-          <ol>{assessment.corrections.map((item) => (
-            <li key={item.correctionId}>
-              <strong>{item.criterionId}</strong>: {LABELS[item.previousStatus]} → {LABELS[item.correctedStatus]} — {item.reason}
-            </li>
-          ))}</ol>
         </section>
-      ) : null}
+
+        <section className={styles.next}>
+          <p className="eyebrow">Recommended next action</p>
+          <h2>{assessment.recommendedNextAction}</h2>
+          {loaded.resolution ? <p className={styles.ready}>Run {loaded.resolution.state}: {loaded.resolution.explanation}</p> : null}
+          <ActionRow
+            back={<Link className="button secondary" href={`/runs/${runId}/evidence`}>Review source evidence</Link>}
+            primary={
+              loaded.run.state === "repair_generated"
+                ? <Link className="button" href={`/runs/${runId}/repair`}>Return to focused repair</Link>
+                : loaded.resolution
+                  ? <Link className="button" href="/">Return to LoopZ</Link>
+                  : nextStep === "complete"
+                    ? <button className="button" onClick={finishRun} type="button">Mark run complete</button>
+                    : nextStep === "repair"
+                      ? <Link className="button" href={`/runs/${runId}/repair`}>Generate focused repair</Link>
+                      : nextStep === "more_evidence"
+                        ? <button className="button" onClick={requestMoreEvidence} type="button">Submit missing evidence</button>
+                        : <button className="button" onClick={finishRun} type="button">Stop and record outcome</button>
+            }
+          />
+        </section>
+
+        {assessment.corrections.length > 0 ? (
+          <section className={styles.audit} aria-labelledby="audit-title">
+            <h2 id="audit-title">Correction audit trail</h2>
+            <ol>{assessment.corrections.map((item) => (
+              <li key={item.correctionId}>
+                <strong>{item.criterionId}</strong>: {LABELS[item.previousStatus]} → {LABELS[item.correctedStatus]} — {item.reason}
+              </li>
+            ))}</ol>
+          </section>
+        ) : null}
+      </WorkflowGrid>
     </main>
   );
 }
@@ -329,5 +347,5 @@ function statusTone(status: CriterionStatus): "positive" | "warning" | "negative
 }
 
 function AssessmentState({ message }: { message: string }) {
-  return <main className={styles.page}><section className={styles.state}><p className="eyebrow">Phase 8 · Evidence assessment</p><h1>Assessment unavailable</h1><p role="status">{message}</p><Link className="button" href="/">Return home</Link></section></main>;
+  return <main className={styles.page}><WorkflowGrid><section className={styles.state}><p className="eyebrow">Evidence assessment</p><WorkflowProgress stage="Assess" next="Complete the run or generate a focused repair" /><h1>Assessment unavailable</h1><p className={message.startsWith("Assessing") ? styles.processing : undefined} role="status">{message}</p><Link className="button" href="/">Return home</Link></section></WorkflowGrid></main>;
 }

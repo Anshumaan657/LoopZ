@@ -91,16 +91,18 @@ export function normalizeEvidenceItem(item: EvidenceItem): NormalizedEvidence {
   };
 }
 
-function requirementKind(value: string): "deterministic" | "inspectable" | "manual" | "report" {
+export function classifyEvidenceRequirement(value: string): "deterministic" | "inspectable" | "manual" | "report" {
   const text = value.toLowerCase();
-  if (/test|command|build|lint|type.?check|exit\s*code|terminal/.test(text)) return "deterministic";
+  if (/\b(?:run|execute|automated|unit|integration|e2e|ci|pipeline)\b.*\btest\b|\btest\b.*\b(?:command|script|suite|runner)\b|command|build|lint|type.?check|exit\s*code|terminal/.test(text)) {
+    return "deterministic";
+  }
   if (/diff|file|source|implementation|change/.test(text)) return "inspectable";
   if (/manual|browser|visual|screen|screenshot|observ/.test(text)) return "manual";
   return "report";
 }
 
 function satisfiesRequiredEvidence(required: string, evidence: readonly NormalizedEvidence[]): boolean {
-  const kind = requirementKind(required);
+  const kind = classifyEvidenceRequirement(required);
   if (kind === "deterministic") {
     return evidence.some((item) => item.strength === "deterministic" && item.supportsSuccess);
   }

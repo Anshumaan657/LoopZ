@@ -1,22 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 
 import {
   analyzeIdeaIntake,
   type IntakeAnalysis,
 } from "@loopz/core/intake";
 
+import { GooeyNav } from "../../components/gooey-nav";
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { safeSetItem } from "../../lib/storage";
+
 type IntakeMode = "guided" | "geek";
 type ProjectStatus = "new" | "existing" | "unknown";
 
-const taskTypeLabels = {
-  new_web_application: "New web application",
-  landing_page: "Landing page",
-  existing_app_feature: "Existing-app feature",
-  bug_fix: "Bug fix",
-} as const;
+const modeItems = [
+  { label: "Guided", href: "/projects/new?mode=guided" },
+  { label: "Geek", href: "/projects/new?mode=geek" },
+];
 
 function splitTechnologyPreferences(value: string): string[] {
   return value
@@ -26,17 +28,46 @@ function splitTechnologyPreferences(value: string): string[] {
     .slice(0, 12);
 }
 
-export function IdeaIntakeForm() {
-  const [mode, setMode] = useState<IntakeMode>("guided");
+export function IdeaIntakeForm({ initialMode = "guided" }: { initialMode?: IntakeMode }) {
+  const [mode, setMode] = useState<IntakeMode>(initialMode);
+  const [superGeek, setSuperGeek] = useState(false);
   const [originalPrompt, setOriginalPrompt] = useState("");
   const [projectStatus, setProjectStatus] = useState<ProjectStatus>("unknown");
   const [projectContext, setProjectContext] = useState("");
   const [technologyPreferences, setTechnologyPreferences] = useState("");
   const [analysis, setAnalysis] = useState<IntakeAnalysis | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
+  const [promptError, setPromptError] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    const syncMode = () => {
+      const nextMode = new URLSearchParams(window.location.search).get("mode");
+      setMode(nextMode === "geek" ? "geek" : "guided");
+    };
+    syncMode();
+    window.addEventListener("popstate", syncMode);
+    return () => window.removeEventListener("popstate", syncMode);
+  }, []);
+
+  function selectMode(nextMode: IntakeMode) {
+    setMode(nextMode);
+    const url = new URL(window.location.href);
+    url.searchParams.set("mode", nextMode);
+    window.history.pushState({}, "", url);
+  }
 
   function submitIntake(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (originalPrompt.trim().length < 20) {
+      setPromptError("Add a little more detail—at least 20 characters—so LoopZ can preserve your intent.");
+      promptRef.current?.focus();
+      return;
+    }
+    setPromptError(null);
+    setStorageError(null);
 
     const intake = {
       originalPrompt,
@@ -60,43 +91,46 @@ export function IdeaIntakeForm() {
         analysis: result,
       };
 
-      localStorage.setItem(`loopz:project:${draftProjectId}`, JSON.stringify(draft));
-      setProjectId(draftProjectId);
+      try {
+        safeSetItem(`loopz:project:${draftProjectId}`, JSON.stringify(draft));
+        setProjectId(draftProjectId);
+      } catch (cause) {
+        setStorageError(cause instanceof Error ? cause.message : "The project could not be saved in this browser.");
+      }
     }
   }
 
   return (
-    <div className="intake-layout">
-      <form className="intake-form" onSubmit={submitIntake}>
-        <fieldset className="mode-fieldset">
-          <legend>How much control do you want?</legend>
-          <div className="mode-grid">
-            <label className={`mode-card ${mode === "guided" ? "selected" : ""}`}>
-              <input
-                checked={mode === "guided"}
-                name="mode"
-                onChange={() => setMode("guided")}
-                type="radio"
-                value="guided"
-              />
-              <span className="mode-kicker">Recommended</span>
-              <strong>Guided</strong>
-              <span>Explain the idea normally. LoopZ will help surface missing decisions.</span>
-            </label>
-            <label className={`mode-card ${mode === "geek" ? "selected" : ""}`}>
-              <input
-                checked={mode === "geek"}
-                name="mode"
-                onChange={() => setMode("geek")}
-                type="radio"
-                value="geek"
-              />
-              <span className="mode-kicker">More control</span>
-              <strong>Geek</strong>
-              <span>Add project status, repository context, and technology preferences.</span>
-            </label>
+    <WorkflowGrid className="intake-layout">
+      <form className="intake-form" noValidate onSubmit={submitIntake}>
+        {promptError || storageError ? (
+          <div className="form-error-summary" role="alert" tabIndex={-1}>
+            <strong>{promptError ? "Check the highlighted field." : "This browser could not save the project."}</strong>
+            <span>{promptError ?? storageError}</span>
           </div>
-        </fieldset>
+        ) : null}
+        <section className="mode-selector" aria-labelledby="mode-selector-title">
+          <div>
+            <p className="eyebrow">Choose your setup</p>
+            <h2 id="mode-selector-title">How much guidance would you like?</h2>
+          </div>
+          <GooeyNav
+            items={modeItems}
+            particleCount={8}
+            particleDistances={[55, 8]}
+            particleR={70}
+            activeIndex={mode === "geek" ? 1 : 0}
+            animationTime={450}
+            timeVariance={150}
+            onSelect={(index) => selectMode(index === 1 ? "geek" : "guided")}
+          />
+        </section>
+
+        <p className="mode-description">
+          {mode === "guided"
+            ? "Guided keeps setup simple and asks only the decisions that can change the result."
+            : "Geek gives you direct control over project context while keeping the same verified workflow."}
+        </p>
 
         <div className="field-group">
           <div className="field-heading">
@@ -104,24 +138,43 @@ export function IdeaIntakeForm() {
             <span>{originalPrompt.length}/4000</span>
           </div>
           <textarea
-            autoFocus
             id="original-prompt"
+            aria-describedby={promptError ? "original-prompt-error" : undefined}
+            aria-invalid={promptError ? true : undefined}
             maxLength={4000}
             minLength={20}
-            onChange={(event) => setOriginalPrompt(event.target.value)}
+            onChange={(event) => {
+              setOriginalPrompt(event.target.value);
+              if (promptError) setPromptError(null);
+              if (storageError) setStorageError(null);
+            }}
             placeholder="For example: Add a customer feedback form to my existing Next.js app. Save submissions and show a clear success message."
             required
+            ref={promptRef}
             rows={8}
             value={originalPrompt}
           />
-          <p className="field-help">
-            Write the request as you would normally send it to a coding agent. LoopZ keeps the
-            original unchanged.
-          </p>
+          {promptError ? <p className="form-error" id="original-prompt-error" role="alert">{promptError}</p> : null}
         </div>
 
         {mode === "geek" ? (
           <section className="geek-panel" aria-label="Geek mode controls">
+            <p className="geek-panel-title">Advanced project context</p>
+            <div className="super-geek-row">
+              <div>
+                <strong>Super Geek</strong>
+                <span>Use this when repository choices or stack constraints must change the generated task.</span>
+              </div>
+              <label className="switch">
+                <input
+                  checked={superGeek}
+                  onChange={(event) => setSuperGeek(event.target.checked)}
+                  type="checkbox"
+                />
+                <span aria-hidden="true" />
+                <b>{superGeek ? "On" : "Off"}</b>
+              </label>
+            </div>
             <div className="field-group">
               <label htmlFor="project-status">Project status</label>
               <select
@@ -134,55 +187,42 @@ export function IdeaIntakeForm() {
                 <option value="existing">Changing an existing project</option>
               </select>
             </div>
-            <div className="field-group">
-              <label htmlFor="project-context">Repository or stack context</label>
-              <textarea
-                id="project-context"
-                maxLength={2000}
-                onChange={(event) => setProjectContext(event.target.value)}
-                placeholder="Example: Existing Next.js App Router project using TypeScript and PostgreSQL."
-                rows={4}
-                value={projectContext}
-              />
-            </div>
-            <div className="field-group">
-              <label htmlFor="technology-preferences">Technology preferences</label>
-              <textarea
-                id="technology-preferences"
-                onChange={(event) => setTechnologyPreferences(event.target.value)}
-                placeholder="One per line or comma-separated, such as: TypeScript, existing design system"
-                rows={3}
-                value={technologyPreferences}
-              />
-            </div>
+            {superGeek ? (
+              <>
+                <div className="field-group wide-field">
+                  <label htmlFor="project-context">Repository or stack context</label>
+                  <textarea
+                    id="project-context"
+                    maxLength={2000}
+                    onChange={(event) => setProjectContext(event.target.value)}
+                    placeholder="Example: Existing Next.js App Router project using TypeScript and PostgreSQL."
+                    rows={4}
+                    value={projectContext}
+                  />
+                </div>
+                <div className="field-group">
+                  <label htmlFor="technology-preferences">Technology preferences</label>
+                  <textarea
+                    id="technology-preferences"
+                    onChange={(event) => setTechnologyPreferences(event.target.value)}
+                    placeholder="One per line or comma-separated, such as: TypeScript, existing design system"
+                    rows={3}
+                    value={technologyPreferences}
+                  />
+                </div>
+              </>
+            ) : null}
           </section>
         ) : null}
 
-        <div className="intake-submit-row">
-          <button className="button" type="submit">
-            Analyze my idea
-          </button>
-          <span>Your request is analyzed locally in this Phase 3 build.</span>
-        </div>
+        <ActionRow
+          primary={<button className="button" type="submit">Go with your idea</button>}
+          stickyOnMobile
+        />
       </form>
 
-      <aside className="intake-aside">
-        <span className="aside-label">MVP boundary</span>
-        <h2>Best for a focused web task.</h2>
-        <ul className="support-list">
-          <li>New web applications</li>
-          <li>Landing pages</li>
-          <li>Existing-app features</li>
-          <li>Clearly bounded bug fixes</li>
-        </ul>
-        <p>
-          Native mobile apps, games, regulated decision systems, and unsafe requests are not
-          accepted in the MVP.
-        </p>
-      </aside>
-
       {analysis ? <IntakeResult analysis={analysis} projectId={projectId} /> : null}
-    </div>
+    </WorkflowGrid>
   );
 }
 
@@ -232,17 +272,19 @@ function IntakeResult({
               : "Clarification recommended"}
           </span>
           <h2>Here&apos;s what LoopZ understood.</h2>
+          <p>{projectId ? <Link href={`/projects/${projectId}/interview`}>{analysis.missingInformation.length === 0 ? "Ready to confirm — no material decisions appear to be missing." : `Mostly clear — ${analysis.missingInformation.length} decision${analysis.missingInformation.length === 1 ? " needs" : "s need"} confirmation.`}</Link> : analysis.missingInformation.length === 0 ? "Ready to confirm — no material decisions appear to be missing." : `Mostly clear — ${analysis.missingInformation.length} decision${analysis.missingInformation.length === 1 ? " needs" : "s need"} confirmation.`}</p>
         </div>
-        <span className="task-type">
-          {taskTypeLabels[analysis.intent.taskType.value]}
-        </span>
       </div>
 
       <div className="analysis-grid">
         <article>
           <h3>Proposed goal</h3>
           <p>{analysis.intent.goal.value}</p>
-          <small>{Math.round(analysis.intent.goal.confidence * 100)}% extraction confidence</small>
+          <small>
+            {analysis.intent.goal.confidence >= 0.75
+              ? "Strong match to your original wording"
+              : "Needs confirmation during clarification"}
+          </small>
         </article>
         <article>
           <h3>Detected constraints</h3>
@@ -258,37 +300,10 @@ function IntakeResult({
         </article>
       </div>
 
-      <div className="missing-section">
-        <h3>Decisions to clarify</h3>
-        {analysis.missingInformation.length > 0 ? (
-          <div className="missing-list">
-            {analysis.missingInformation.map((item) => (
-              <article key={`${item.category}-${item.reason}`}>
-                <span>{item.category.replaceAll("_", " ")}</span>
-                <p>{item.reason}</p>
-                {item.blocking ? <strong>Blocking</strong> : <small>Can be confirmed next</small>}
-              </article>
-            ))}
-          </div>
-        ) : (
-          <p>No material gaps were detected. The interview can confirm the extracted intent.</p>
-        )}
-      </div>
-
-      <div className="analysis-actions">
-        {projectId ? (
-          <Link className="button" href={`/projects/${projectId}/interview`}>
-            Continue to clarification
-          </Link>
-        ) : null}
-        <button
-          className="button secondary"
-          onClick={() => document.getElementById("original-prompt")?.focus()}
-          type="button"
-        >
-          Edit my idea
-        </button>
-      </div>
+      <ActionRow
+        back={<button className="button secondary" onClick={() => document.getElementById("original-prompt")?.focus()} type="button">Edit my idea</button>}
+        primary={projectId ? <Link className="button" href={`/projects/${projectId}/interview`}>Continue to clarification</Link> : <span />}
+      />
     </section>
   );
 }

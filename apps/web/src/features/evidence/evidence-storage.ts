@@ -9,6 +9,7 @@ import {
   saveTaskRun,
   taskRunStorageKey,
 } from "../artifacts/task-storage";
+import { safeGetItem, safeSetItem, safeRemoveItem, safeParseJSON, StorageCorruptedError } from "../../lib/storage";
 
 export const MAX_EVIDENCE_SUBMISSIONS_PER_RUN = 3;
 
@@ -17,10 +18,10 @@ export function evidenceStorageKey(runId: string): string {
 }
 
 export function loadEvidenceSubmissions(runId: string): EvidenceSubmission[] {
-  const raw = localStorage.getItem(evidenceStorageKey(runId));
+  const raw = safeGetItem(evidenceStorageKey(runId));
   if (!raw) return [];
-  const parsed: unknown = JSON.parse(raw);
-  if (!Array.isArray(parsed)) throw new Error("Saved evidence history is corrupted.");
+  const parsed = safeParseJSON<unknown>(raw, evidenceStorageKey(runId));
+  if (!Array.isArray(parsed)) throw new StorageCorruptedError("Saved evidence history is corrupted.");
   const submissions = parsed.map((item) => evidenceSubmissionSchema.parse(item));
   if (submissions.length > MAX_EVIDENCE_SUBMISSIONS_PER_RUN) {
     throw new Error("Saved evidence history exceeds the bounded submission limit.");
@@ -103,26 +104,26 @@ export function persistEvidenceSubmission(
   const updatedRun = runSchema.parse({ ...run, state: "evidence_submitted", updatedAt });
   const contractRunKey = taskRunStorageKey(run.projectId, run.contractVersionId);
   const indexedRunKey = runStorageKey(run.runId);
-  const previousContractRun = localStorage.getItem(contractRunKey);
-  const previousIndexedRun = localStorage.getItem(indexedRunKey);
-  localStorage.setItem(evidenceStorageKey(run.runId), JSON.stringify(submissions));
+  const previousContractRun = safeGetItem(contractRunKey);
+  const previousIndexedRun = safeGetItem(indexedRunKey);
+  safeSetItem(evidenceStorageKey(run.runId), JSON.stringify(submissions));
   try {
     saveTaskRun(updatedRun);
   } catch (cause) {
-    if (existing.length === 0) localStorage.removeItem(evidenceStorageKey(run.runId));
-    else localStorage.setItem(evidenceStorageKey(run.runId), JSON.stringify(existing));
-    if (previousContractRun === null) localStorage.removeItem(contractRunKey);
-    else localStorage.setItem(contractRunKey, previousContractRun);
-    if (previousIndexedRun === null) localStorage.removeItem(indexedRunKey);
-    else localStorage.setItem(indexedRunKey, previousIndexedRun);
+    if (existing.length === 0) safeRemoveItem(evidenceStorageKey(run.runId));
+    else safeSetItem(evidenceStorageKey(run.runId), JSON.stringify(existing));
+    if (previousContractRun === null) safeRemoveItem(contractRunKey);
+    else safeSetItem(contractRunKey, previousContractRun);
+    if (previousIndexedRun === null) safeRemoveItem(indexedRunKey);
+    else safeSetItem(indexedRunKey, previousIndexedRun);
     throw cause;
   }
   return { run: updatedRun, submissions };
 }
 
 export function deleteLocalRunAndEvidence(run: Run): void {
-  localStorage.removeItem(evidenceStorageKey(run.runId));
-  localStorage.removeItem(`loopz:run:${run.runId}:assessments`);
-  localStorage.removeItem(runStorageKey(run.runId));
-  localStorage.removeItem(taskRunStorageKey(run.projectId, run.contractVersionId));
+  safeRemoveItem(evidenceStorageKey(run.runId));
+  safeRemoveItem(`loopz:run:${run.runId}:assessments`);
+  safeRemoveItem(runStorageKey(run.runId));
+  safeRemoveItem(taskRunStorageKey(run.projectId, run.contractVersionId));
 }

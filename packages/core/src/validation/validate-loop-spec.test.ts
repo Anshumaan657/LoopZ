@@ -83,6 +83,16 @@ describe("validateLoopSpec", () => {
     expect(issueCodes(fixture)).toContain("scope_conflict");
   });
 
+  it.each([
+    ["User login", "User-login"],
+    ["Payment processing", "payment_processing"],
+  ])("recognizes punctuation variants as the same scope: %s / %s", (included, excluded) => {
+    const fixture = validFixture();
+    fixture.scope.included[0]!.description = included;
+    fixture.scope.excluded[0]!.description = excluded;
+    expect(issueCodes(fixture)).toContain("scope_conflict");
+  });
+
   it("blocks unresolved high-risk decisions", () => {
     const fixture = validFixture();
     fixture.scope.unresolvedDecisions.push({

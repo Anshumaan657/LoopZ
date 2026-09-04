@@ -1,5 +1,6 @@
 import { runSchema, type Run } from "@loopz/contracts/run";
 import type { ConfirmedContractVersion } from "@loopz/contracts/versioning";
+import { safeGetItem, safeParseJSON, safeSetItemsAtomically } from "../../lib/storage";
 
 export function taskRunStorageKey(projectId: string, contractVersionId: string): string {
   return `loopz:project:${projectId}:contract:${contractVersionId}:run`;
@@ -23,18 +24,18 @@ function requireMatchingRun(run: Run, version: ConfirmedContractVersion): void {
 
 export function saveTaskRun(run: Run): Run {
   const parsed = runSchema.parse(run);
-  localStorage.setItem(
-    taskRunStorageKey(parsed.projectId, parsed.contractVersionId),
-    JSON.stringify(parsed),
-  );
-  localStorage.setItem(runStorageKey(parsed.runId), JSON.stringify(parsed));
+  const serialized = JSON.stringify(parsed);
+  safeSetItemsAtomically([
+    [taskRunStorageKey(parsed.projectId, parsed.contractVersionId), serialized],
+    [runStorageKey(parsed.runId), serialized],
+  ]);
   return parsed;
 }
 
 export function loadTaskRunById(runId: string): Run {
-  const raw = localStorage.getItem(runStorageKey(runId));
+  const raw = safeGetItem(runStorageKey(runId));
   if (!raw) throw new Error("This run was not found in this browser.");
-  const run = runSchema.parse(JSON.parse(raw));
+  const run = runSchema.parse(safeParseJSON(raw, runStorageKey(runId)));
   if (run.runId !== runId) throw new Error("The saved run ID does not match this URL.");
   return run;
 }
@@ -44,9 +45,9 @@ export function prepareTaskRun(
   create: { runId: string; generatedAt: string },
 ): { run: Run; isNew: boolean } {
   const key = taskRunStorageKey(version.projectId, version.versionId);
-  const raw = localStorage.getItem(key);
+  const raw = safeGetItem(key);
   if (raw) {
-    const run = runSchema.parse(JSON.parse(raw));
+    const run = runSchema.parse(safeParseJSON(raw, key));
     requireMatchingRun(run, version);
     return { run, isNew: false };
   }

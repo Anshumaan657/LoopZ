@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { renderCodexArtifacts, type CodexArtifactBundle } from "@loopz/codex-adapter";
 import type { ProviderNeutralTask } from "@loopz/contracts/task";
@@ -14,6 +14,8 @@ import {
   type UniversalArtifactBundle,
 } from "@loopz/universal-adapter";
 
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
 import { loadContractVersions } from "../versioning/version-storage";
 import { copyExactTask, downloadExactTask } from "./task-actions";
 import {
@@ -43,6 +45,8 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [delivering, setDelivering] = useState(false);
+  const deliveryInProgress = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -117,7 +121,9 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
       : delivery.universal.starterPrompt;
 
   async function copyTask() {
-    if (!delivery || !selectedArtifact) return;
+    if (!delivery || !selectedArtifact || deliveryInProgress.current) return;
+    deliveryInProgress.current = true;
+    setDelivering(true);
     setError(null);
     try {
       await copyExactTask(selectedArtifact.content);
@@ -127,11 +133,16 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
     } catch (cause) {
       setNotice(null);
       setError(cause instanceof Error ? cause.message : "The task could not be copied.");
+    } finally {
+      deliveryInProgress.current = false;
+      setDelivering(false);
     }
   }
 
   function downloadTask() {
-    if (!delivery || !selectedArtifact) return;
+    if (!delivery || !selectedArtifact || deliveryInProgress.current) return;
+    deliveryInProgress.current = true;
+    setDelivering(true);
     setError(null);
     try {
       downloadExactTask(selectedArtifact.filename, selectedArtifact.content);
@@ -141,6 +152,21 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
     } catch (cause) {
       setNotice(null);
       setError(cause instanceof Error ? cause.message : "The task could not be downloaded.");
+    } finally {
+      deliveryInProgress.current = false;
+      setDelivering(false);
+    }
+  }
+
+  async function copyRunId() {
+    if (!delivery) return;
+    try {
+      await copyExactTask(delivery.run.runId);
+      setNotice("Run ID copied.");
+      setError(null);
+    } catch (cause) {
+      setNotice(null);
+      setError(cause instanceof Error ? cause.message : "The run ID could not be copied.");
     }
   }
 
@@ -172,20 +198,20 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
       </nav>
 
       <header className={styles.header}>
-        <p className="eyebrow">Phase 6 · Task delivery</p>
+        <p className="eyebrow">Agent task</p>
+        <WorkflowProgress stage="Task" next="Run the task, then return execution evidence" />
         <h1>Your confirmed build task is ready.</h1>
         <p>Choose a format, preview the complete instruction, then copy or download that exact text.</p>
       </header>
 
       <section className={styles.meta} aria-label="Run details">
-        <div><span>Run</span><code>{delivery.run.runId}</code></div>
+        <div><span>Run</span><code>{delivery.run.runId}</code><button onClick={() => void copyRunId()} type="button">Copy ID</button></div>
         <div><span>Contract</span><strong>v{delivery.version.version}</strong></div>
         <div><span>State</span><strong>{delivery.run.state.replaceAll("_", " ")}</strong></div>
         <div><span>Hash</span><code>{delivery.version.contractHash.slice(0, 23)}…</code></div>
       </section>
 
-      <div className={styles.layout}>
-        <aside className={styles.sidebar}>
+      <WorkflowGrid className={styles.layout} aside={<div className={styles.sidebar}>
           <h2>Output format</h2>
           <div className={styles.tabs} role="tablist" aria-label="Coding agent output format">
             <button
@@ -225,30 +251,56 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
             <div><dt>Criteria</dt><dd>{delivery.task.contract.acceptance.criteria.length}</dd></div>
             <div><dt>Commands</dt><dd>{delivery.task.contract.acceptance.verificationCommands.length}</dd></div>
           </dl>
-        </aside>
-
+        </div>}>
+        <section className={styles.overview} aria-labelledby="task-overview-title">
+          <div className={styles.overviewHeading}>
+            <p className="eyebrow">Approved build</p>
+            <h2 id="task-overview-title">Execution summary</h2>
+          </div>
+          <div className={styles.overviewActions}>
+            <ActionRow
+              back={<button className="button secondary" disabled={delivering} onClick={downloadTask} type="button">Download Markdown</button>}
+              disabledReason={delivering ? "LoopZ is completing the selected delivery action." : null}
+              primary={<button className="button" disabled={delivering} onClick={() => void copyTask()} type="button">{delivering ? "Preparing…" : "Copy exact task"}</button>}
+              stickyOnMobile
+            />
+          </div>
+          <article>
+            <h3>Objective</h3>
+            <p>{delivery.task.contract.objective.goal.value}</p>
+          </article>
+          <article><h3>Deliverables</h3><ul>
+            {delivery.task.contract.objective.deliverables.map((item) => (
+              <li key={item.id}>
+                <span>{item.priority}</span>
+                {item.description}
+              </li>
+            ))}
+          </ul></article>
+          <article><h3>Verification</h3><ul>{delivery.task.contract.acceptance.verificationCommands.map((command) => <li key={command}><code>{command}</code></li>)}</ul></article>
+          <article><h3>Restrictions</h3><ul>{delivery.task.contract.safety.restrictedActions.map((restriction) => <li key={restriction}>{restriction}</li>)}</ul></article>
+        </section>
         <section className={styles.previewSection}>
           <div className={styles.previewHeader}>
             <div><span>Copy-ready Markdown</span><strong>{selectedArtifact.filename}</strong></div>
             <span>{selectedArtifact.content.length.toLocaleString()} characters</span>
           </div>
-          <pre
-            aria-labelledby={format === "codex" ? "codex-tab" : "universal-tab"}
-            className={styles.preview}
-            id="task-preview"
-            role="tabpanel"
-            tabIndex={0}
-          ><code>{selectedArtifact.content}</code></pre>
-          <div className={styles.actions}>
-            <button className="button" onClick={() => void copyTask()} type="button">Copy exact task</button>
-            <button className="button secondary" onClick={downloadTask} type="button">Download Markdown</button>
-          </div>
+          <details className={styles.raw}>
+            <summary>Inspect the full execution-ready instruction</summary>
+            <pre
+              aria-labelledby={format === "codex" ? "codex-tab" : "universal-tab"}
+              className={styles.preview}
+              id="task-preview"
+              role="tabpanel"
+              tabIndex={0}
+            ><code>{selectedArtifact.content}</code></pre>
+          </details>
           <div className={styles.feedback} aria-live="polite">
             {notice ? <p className={styles.success}>{notice}</p> : null}
             {error ? <p className={styles.error} role="alert">{error}</p> : null}
           </div>
         </section>
-      </div>
+      </WorkflowGrid>
 
       <section className={styles.next}>
         <p className="eyebrow">What happens next</p>
@@ -257,18 +309,11 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
           Paste the exact task into your coding agent. When it finishes, return its final report,
           command output, and file-change summary here.
         </p>
-        <button
-          className="button"
-          disabled={delivery.run.state === "task_generated"}
-          onClick={returnEvidence}
-          type="button"
-        >
-          {delivery.run.state === "task_generated"
-            ? "Copy or download the task first"
-            : delivery.run.state === "evidence_submitted"
-              ? "View submitted evidence"
-              : "Return execution evidence"}
-        </button>
+        <ActionRow
+          back={<Link className="button secondary" href={`/projects/${projectId}/contract/confirm`}>Back to confirmation</Link>}
+          disabledReason={delivery.run.state === "task_generated" ? "Copy or download the exact task before returning evidence." : null}
+          primary={<button className="button" disabled={delivery.run.state === "task_generated"} onClick={returnEvidence} type="button">{delivery.run.state === "evidence_submitted" ? "View submitted evidence" : "Return execution evidence"}</button>}
+        />
       </section>
     </main>
   );
@@ -278,7 +323,8 @@ function DeliveryState({ projectId, message }: { projectId: string; message: str
   return (
     <main className={styles.page}>
       <section className={styles.state}>
-        <p className="eyebrow">Phase 6 · Task delivery</p>
+        <p className="eyebrow">Agent task</p>
+        <WorkflowProgress stage="Task" next="Run the task, then return execution evidence" />
         <h1>Task delivery unavailable</h1>
         <p role="status">{message}</p>
         <Link className="button" href={`/projects/${projectId}/contract/confirm`}>Return to confirmation</Link>

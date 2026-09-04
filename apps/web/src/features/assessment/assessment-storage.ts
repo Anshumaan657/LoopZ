@@ -2,6 +2,7 @@ import { assessmentSchema, type Assessment } from "@loopz/contracts/assessment";
 import { runSchema, type Run } from "@loopz/contracts/run";
 
 import { runStorageKey, saveTaskRun, taskRunStorageKey } from "../artifacts/task-storage";
+import { safeGetItem, safeSetItem, safeRemoveItem, safeParseJSON, StorageCorruptedError } from "../../lib/storage";
 
 export const MAX_ASSESSMENT_VERSIONS_PER_RUN = 10;
 
@@ -10,10 +11,10 @@ export function assessmentStorageKey(runId: string): string {
 }
 
 export function loadAssessments(runId: string): Assessment[] {
-  const raw = localStorage.getItem(assessmentStorageKey(runId));
+  const raw = safeGetItem(assessmentStorageKey(runId));
   if (!raw) return [];
-  const parsed: unknown = JSON.parse(raw);
-  if (!Array.isArray(parsed)) throw new Error("Saved assessment history is corrupted.");
+  const parsed = safeParseJSON<unknown>(raw, assessmentStorageKey(runId));
+  if (!Array.isArray(parsed)) throw new StorageCorruptedError("Saved assessment history is corrupted.");
   const assessments = parsed.map((item) => assessmentSchema.parse(item));
   if (assessments.length > MAX_ASSESSMENT_VERSIONS_PER_RUN) {
     throw new Error("Saved assessment history exceeds its bounded limit.");
@@ -87,19 +88,19 @@ export function persistAssessment(
   const historyKey = assessmentStorageKey(run.runId);
   const contractRunKey = taskRunStorageKey(run.projectId, run.contractVersionId);
   const indexedRunKey = runStorageKey(run.runId);
-  const oldHistory = localStorage.getItem(historyKey);
-  const oldContractRun = localStorage.getItem(contractRunKey);
-  const oldIndexedRun = localStorage.getItem(indexedRunKey);
-  localStorage.setItem(historyKey, JSON.stringify(assessments));
+  const oldHistory = safeGetItem(historyKey);
+  const oldContractRun = safeGetItem(contractRunKey);
+  const oldIndexedRun = safeGetItem(indexedRunKey);
+  safeSetItem(historyKey, JSON.stringify(assessments));
   try {
     saveTaskRun(updatedRun);
   } catch (cause) {
-    if (oldHistory === null) localStorage.removeItem(historyKey);
-    else localStorage.setItem(historyKey, oldHistory);
-    if (oldContractRun === null) localStorage.removeItem(contractRunKey);
-    else localStorage.setItem(contractRunKey, oldContractRun);
-    if (oldIndexedRun === null) localStorage.removeItem(indexedRunKey);
-    else localStorage.setItem(indexedRunKey, oldIndexedRun);
+    if (oldHistory === null) safeRemoveItem(historyKey);
+    else safeSetItem(historyKey, oldHistory);
+    if (oldContractRun === null) safeRemoveItem(contractRunKey);
+    else safeSetItem(contractRunKey, oldContractRun);
+    if (oldIndexedRun === null) safeRemoveItem(indexedRunKey);
+    else safeSetItem(indexedRunKey, oldIndexedRun);
     throw cause;
   }
   return { run: updatedRun, assessments };

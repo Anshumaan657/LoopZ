@@ -9,6 +9,7 @@ import {
   compileContractFoundation,
   compileSafetyContract,
 } from "@loopz/core/generation";
+import { safeGetItem, safeSetItem, safeParseJSON } from "../../lib/storage";
 
 export type StoredProjectRecord = Record<string, unknown> & {
   projectId: string;
@@ -27,10 +28,11 @@ export function projectStorageKey(projectId: string): string {
 }
 
 export function loadProjectRecord(projectId: string): StoredProjectRecord {
-  const raw = localStorage.getItem(projectStorageKey(projectId));
+  const raw = safeGetItem(projectStorageKey(projectId));
   if (!raw) throw new Error("This project draft was not found in this browser.");
 
-  const parsed = JSON.parse(raw) as StoredProjectRecord;
+  const parsed = safeParseJSON<StoredProjectRecord>(raw, projectStorageKey(projectId));
+  if (!parsed) throw new Error("Failed to parse project record.");
   if (parsed.projectId !== projectId) throw new Error("The saved project ID does not match this URL.");
   return parsed;
 }
@@ -76,6 +78,6 @@ export function saveContractReview(
     updatedAt,
   };
   const updated = { ...record, contractReview };
-  localStorage.setItem(projectStorageKey(record.projectId), JSON.stringify(updated));
+  safeSetItem(projectStorageKey(record.projectId), JSON.stringify(updated));
   return updated;
 }

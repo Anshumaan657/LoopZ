@@ -1,13 +1,15 @@
 import { runResolutionSchema, runSchema, type Run, type RunResolution } from "@loopz/contracts/run";
 
 import { runStorageKey, saveTaskRun, taskRunStorageKey } from "../artifacts/task-storage";
+import { safeGetItem, safeSetItem, safeRemoveItem, safeParseJSON } from "../../lib/storage";
 
 export function runResolutionStorageKey(runId: string): string { return `loopz:run:${runId}:resolution`; }
 
 export function loadRunResolution(runId: string): RunResolution | null {
-  const raw = localStorage.getItem(runResolutionStorageKey(runId));
+  const raw = safeGetItem(runResolutionStorageKey(runId));
   if (!raw) return null;
-  const resolution = runResolutionSchema.parse(JSON.parse(raw));
+  const parsed = safeParseJSON<unknown>(raw, runResolutionStorageKey(runId));
+  const resolution = runResolutionSchema.parse(parsed);
   if (resolution.runId !== runId) throw new Error("Saved resolution belongs to another run.");
   return resolution;
 }
@@ -32,17 +34,17 @@ export function persistRunResolution(runInput: Run, resolvedRunInput: Run, resol
   const resolutionKey = runResolutionStorageKey(run.runId);
   const contractKey = taskRunStorageKey(run.projectId, run.contractVersionId);
   const indexKey = runStorageKey(run.runId);
-  const oldContract = localStorage.getItem(contractKey);
-  const oldIndex = localStorage.getItem(indexKey);
-  localStorage.setItem(resolutionKey, JSON.stringify(resolution));
+  const oldContract = safeGetItem(contractKey);
+  const oldIndex = safeGetItem(indexKey);
+  safeSetItem(resolutionKey, JSON.stringify(resolution));
   try {
     saveTaskRun(resolvedRun);
   } catch (cause) {
-    localStorage.removeItem(resolutionKey);
-    if (oldContract === null) localStorage.removeItem(contractKey);
-    else localStorage.setItem(contractKey, oldContract);
-    if (oldIndex === null) localStorage.removeItem(indexKey);
-    else localStorage.setItem(indexKey, oldIndex);
+    safeRemoveItem(resolutionKey);
+    if (oldContract === null) safeRemoveItem(contractKey);
+    else safeSetItem(contractKey, oldContract);
+    if (oldIndex === null) safeRemoveItem(indexKey);
+    else safeSetItem(indexKey, oldIndex);
     throw cause;
   }
   return resolution;

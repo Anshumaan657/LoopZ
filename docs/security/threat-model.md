@@ -5,35 +5,35 @@
 - User project ideas and client requirements.
 - Generated contracts and agent tasks.
 - Returned code summaries, test output, and agent reports.
-- Model-provider credentials.
 - Run return links.
 
 ## Trust boundaries
 
-- Browser to LoopZ server.
-- LoopZ server to model provider.
+- Browser UI to same-origin `localStorage`.
 - User-pasted repository context.
 - User-pasted agent output.
-- Analytics and monitoring providers.
 
 ## Primary threats
 
 - Prompt injection through pasted content.
 - Accidental credential submission.
-- Unauthorized access through guessed return links.
-- Sensitive content leaking into logs or analytics.
+- Sensitive content remaining in shared browser storage.
+- Another person using the same browser profile opening a known run URL.
 - False completion claims treated as verification.
 - Oversized or malicious input.
-- Repeated model requests causing unexpected cost.
+- Browser storage quota exhaustion or corrupted local data.
 
 ## MVP controls
 
-- Structured model output and schema validation.
-- Server-only secrets.
-- Signed, high-entropy return identifiers.
-- Input-size and rate limits.
-- Credential-pattern warnings.
-- Content-safe logging.
+- Structured deterministic output and schema validation.
+- No model-provider or database credentials in the web application.
+- UUIDv4 identifiers validated at dynamic route boundaries.
+- Input-size limits; there is no server-side rate limiting in the browser-only MVP.
+- Credential-pattern detection blocks evidence submission until suspected secrets are removed.
 - Explicit retention and deletion behavior.
 - Deterministic evidence-presence checks.
 - Repair limits and no-progress detection.
+
+## Deferred controls
+
+Authenticated ownership, signed shareable return links, server-side rate limiting, durable audit logs, and server-side secret scanning require post-MVP infrastructure.

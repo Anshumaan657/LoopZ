@@ -9,6 +9,8 @@ import type { Run } from "@loopz/contracts/run";
 import type { ConfirmedContractVersion } from "@loopz/contracts/versioning";
 import { compileEvidenceSubmission } from "@loopz/core/evidence";
 
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
 import { loadTaskRunById } from "../artifacts/task-storage";
 import { loadContractVersions } from "../versioning/version-storage";
 import { deleteRepairHistory } from "../repair/repair-storage";
@@ -105,8 +107,9 @@ export function EvidenceReturn({ runId }: { runId: string }) {
     return (
       <main className={styles.page}>
         <nav className={styles.nav}><Link href="/">LoopZ</Link></nav>
-        <section className={styles.complete} aria-live="polite">
+        <WorkflowGrid><section className={styles.complete} aria-live="polite">
           <span className="status-pill">Evidence submitted</span>
+          <WorkflowProgress stage="Evidence" next="Assess the returned proof" />
           <h1>The execution return is safely linked.</h1>
            <p>
              LoopZ preserved submission {loaded.submissionCount} with {loaded.submission.evidenceItems.length} evidence items across {loaded.submission.criteria.length} acceptance criteria.
@@ -118,11 +121,11 @@ export function EvidenceReturn({ runId }: { runId: string }) {
             <div><dt>Contract</dt><dd>v{loaded.run.contractVersion}</dd></div>
             <div><dt>State</dt><dd>{loaded.run.state.replaceAll("_", " ")}</dd></div>
           </dl>
-          <div className={styles.actions}>
-            <Link className="button" href={`/runs/${loaded.run.runId}/assessment`}>Continue to evidence assessment</Link>
-            <button className={styles.deleteButton} onClick={deleteLocalData} type="button">Delete local run and evidence</button>
-          </div>
-        </section>
+          <ActionRow
+            destructive={<button className={styles.deleteButton} onClick={deleteLocalData} type="button">Delete local run and evidence</button>}
+            primary={<Link className="button" href={`/runs/${loaded.run.runId}/assessment`}>Continue to evidence assessment</Link>}
+          />
+        </section></WorkflowGrid>
       </main>
     );
   }
@@ -139,7 +142,8 @@ export function EvidenceReturn({ runId }: { runId: string }) {
         <Link href={loaded.run.repairAttempts > 0 ? `/runs/${loaded.run.runId}/repair` : `/projects/${loaded.run.projectId}/task?version=${loaded.run.contractVersionId}`}>{loaded.run.repairAttempts > 0 ? "Back to repair" : "Back to task"}</Link>
       </nav>
       <header className={styles.header}>
-        <p className="eyebrow">{loaded.run.repairAttempts > 0 ? `Phase 9 · Repair evidence ${loaded.run.repairAttempts}` : "Phase 7 · Evidence return"}</p>
+        <p className="eyebrow">{loaded.run.repairAttempts > 0 ? `Repair evidence · Attempt ${loaded.run.repairAttempts}` : "Execution evidence"}</p>
+        <WorkflowProgress stage="Evidence" next="Assess the returned proof" />
         <h1>{loaded.run.repairAttempts > 0 ? "Show what changed after the repair." : "Show what the agent actually produced."}</h1>
         <p>
           Paste original outputs. LoopZ will preserve claims separately from evidence and assess them against the confirmed contract next.
@@ -163,7 +167,8 @@ function EvidenceState({ message }: { message: string }) {
   return (
     <main className={styles.page}>
       <section className={styles.state}>
-        <p className="eyebrow">Phase 7 · Evidence return</p>
+        <p className="eyebrow">Execution evidence</p>
+        <WorkflowProgress stage="Evidence" next="Assess the returned proof" />
         <h1>Evidence return unavailable</h1>
         <p role="status">{message}</p>
         <Link className="button" href="/">Return home</Link>

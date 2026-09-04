@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { type FormEvent, useEffect, useState } from "react";
 
-import { interviewSessionSchema, type InterviewSession } from "@loopz/contracts/intake";
+import {
+  interviewSessionSchema,
+  type InterviewQuestion,
+  type InterviewSession,
+} from "@loopz/contracts/intake";
 import type { IntakeAnalysis } from "@loopz/core/intake";
 import {
   answerInterviewQuestion,
   createInterviewSession,
 } from "@loopz/core/interview";
+
+import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { WorkflowProgress } from "../../components/workflow-progress";
+import { safeGetItem, safeParseJSON, safeSetItem } from "../../lib/storage";
 
 type AcceptedIntakeAnalysis = Extract<IntakeAnalysis, { valid: true }>;
 
@@ -28,16 +36,32 @@ type LoadedInterview = {
   session: InterviewSession;
 };
 
-const taskTypeLabels = {
-  new_web_application: "New web application",
-  landing_page: "Landing page",
-  existing_app_feature: "Existing-app feature",
-  bug_fix: "Bug fix",
-} as const;
+const textAnswerOptions: Partial<Record<InterviewQuestion["category"], string[]>> = {
+  primary_flow: ["Complete the main user journey", "Improve an existing journey", "Help me decide"],
+  roles_and_access: ["One public user type", "Signed-in users and admins", "Preserve existing roles"],
+  authentication: ["Use the existing sign-in", "Email and password", "No sign-in for this version"],
+  data_handling: ["Store only essential data", "Use the existing data model", "Do not persist data"],
+  external_integrations: ["Use the existing integration", "Use a local mock", "Exclude the integration"],
+  repository_context: ["Start a new project", "Use an existing repository and preserve its stack", "I’m not sure yet"],
+  verification: ["Run existing tests and the production build", "Add automated tests for the changed flow", "Verify the flow in a browser"],
+  scope: ["Build the smallest working version", "Include the complete described flow", "Help me narrow the scope"],
+  visual_behavior: ["Use the existing design system", "Create a responsive monochrome interface", "Match a reference I will provide"],
+};
+
+type DisplayAnswerOption = { value: string; label: string; description?: string };
+
+function quickAnswerOptions(question: InterviewQuestion): DisplayAnswerOption[] {
+  if (question.answerKind === "choice") return question.options;
+  return (textAnswerOptions[question.category] ?? [
+    "Use the safest practical default",
+    "Preserve the existing behavior",
+    "Help me decide",
+  ]).map((value) => ({ value, label: value }));
+}
 
 function persistInterview(draft: StoredProjectDraft, session: InterviewSession) {
   const updatedDraft = { ...draft, interview: session };
-  localStorage.setItem(`loopz:project:${draft.projectId}`, JSON.stringify(updatedDraft));
+  safeSetItem(`loopz:project:${draft.projectId}`, JSON.stringify(updatedDraft));
   return updatedDraft;
 }
 
@@ -45,17 +69,21 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
   const [loaded, setLoaded] = useState<LoadedInterview | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [answer, setAnswer] = useState("");
+  const [answerDetails, setAnswerDetails] = useState("");
+  const [customAnswer, setCustomAnswer] = useState(false);
   const [answerError, setAnswerError] = useState<string | null>(null);
 
   useEffect(() => {
-    const rawDraft = localStorage.getItem(`loopz:project:${projectId}`);
+    const storageKey = `loopz:project:${projectId}`;
+    const rawDraft = safeGetItem(storageKey);
     if (!rawDraft) {
       setLoadError("This project draft was not found in this browser.");
       return;
     }
 
     try {
-      const draft = JSON.parse(rawDraft) as StoredProjectDraft;
+      const draft = safeParseJSON<StoredProjectDraft>(rawDraft, storageKey);
+      if (!draft) throw new Error("The project draft is empty.");
       if (
         draft.projectId !== projectId ||
         !draft.analysis?.valid ||
@@ -71,8 +99,8 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
         : createInterviewSession({ projectId, analysis: draft.analysis });
       const updatedDraft = persistInterview(draft, session);
       setLoaded({ draft: updatedDraft, session });
-    } catch {
-      setLoadError("The saved project draft is invalid. Start a new intake to continue.");
+    } catch (cause) {
+      setLoadError(cause instanceof Error ? cause.message : "The saved project draft is invalid. Start a new intake to continue.");
     }
   }, [projectId]);
 
@@ -81,6 +109,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
       <InterviewShell>
         <section className="interview-state-card interview-error" aria-live="polite">
           <span className="status-pill">Draft unavailable</span>
+          <WorkflowProgress stage="Clarify" next="Review the execution contract" />
           <h1>LoopZ cannot open this interview.</h1>
           <p>{loadError}</p>
           <Link className="button" href="/projects/new">
@@ -96,6 +125,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
       <InterviewShell>
         <section className="interview-state-card" aria-live="polite">
           <span className="status-pill">Loading</span>
+          <WorkflowProgress stage="Clarify" next="Review the execution contract" />
           <h1>Preparing the smallest useful question set…</h1>
         </section>
       </InterviewShell>
@@ -116,10 +146,31 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
     if (!currentQuestion) return;
 
     try {
-      const nextSession = answerInterviewQuestion(session, answer);
+      const sessionWithCustomOption =
+        customAnswer && currentQuestion.answerKind === "choice"
+          ? {
+              ...session,
+              questions: session.questions.map((question) =>
+                question.id === currentQuestion.id
+                  ? {
+                      ...question,
+                      options: [...question.options, { value: answer, label: answer }],
+                    }
+                  : question,
+              ),
+            }
+          : session;
+      const nextSession = answerInterviewQuestion(
+        sessionWithCustomOption,
+        answer,
+        new Date().toISOString(),
+        answerDetails,
+      );
       const nextDraft = persistInterview(draft, nextSession);
       setLoaded({ draft: nextDraft, session: nextSession });
       setAnswer("");
+      setAnswerDetails("");
+      setCustomAnswer(false);
       setAnswerError(null);
     } catch (error) {
       setAnswerError(error instanceof Error ? error.message : "The answer could not be saved.");
@@ -132,6 +183,8 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
     const nextDraft = persistInterview(draft, nextSession);
     setLoaded({ draft: nextDraft, session: nextSession });
     setAnswer("");
+    setAnswerDetails("");
+    setCustomAnswer(false);
     setAnswerError(null);
   }
 
@@ -139,7 +192,8 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
     <InterviewShell>
       <header className="interview-header">
         <div>
-          <p className="eyebrow">Phase 4 · Risk-based clarification</p>
+          <p className="eyebrow">Clarify the build</p>
+          <WorkflowProgress stage="Clarify" next="Review and save the execution contract" />
           <h1>Resolve only what changes the outcome.</h1>
         </div>
         <div className="interview-budget">
@@ -154,30 +208,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
         <span style={{ width: `${progress}%` }} />
       </div>
 
-      <div className="interview-layout">
-        <aside className="interview-context">
-          <span className="aside-label">Confirmed intake</span>
-          <h2>{draft.analysis.intent.goal.value}</h2>
-          <dl>
-            <div>
-              <dt>Task type</dt>
-              <dd>{taskTypeLabels[draft.analysis.intent.taskType.value]}</dd>
-            </div>
-            <div>
-              <dt>Mode</dt>
-              <dd>{draft.intake.mode === "geek" ? "Geek" : "Guided"}</dd>
-            </div>
-            <div>
-              <dt>Question limit</dt>
-              <dd>Maximum {session.questionBudget}</dd>
-            </div>
-          </dl>
-          <details>
-            <summary>Original request</summary>
-            <p>{draft.intake.originalPrompt}</p>
-          </details>
-        </aside>
-
+      <WorkflowGrid className="interview-layout">
         {session.status === "in_progress" && currentQuestion ? (
           <form className="question-card" onSubmit={saveAnswer}>
             <div className="question-meta">
@@ -187,20 +218,17 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
               <span>{currentQuestion.category.replaceAll("_", " ")}</span>
             </div>
             <h2>{currentQuestion.prompt}</h2>
-            <p>{currentQuestion.rationale}</p>
-
-            {currentQuestion.answerKind === "choice" ? (
-              <fieldset className="answer-options">
-                <legend>Choose one answer</legend>
-                {currentQuestion.options.map((option) => (
+            <fieldset className="answer-options">
+              <legend>Choose the closest answer</legend>
+              {quickAnswerOptions(currentQuestion).map((option) => (
                   <label
-                    className={`answer-option ${answer === option.value ? "selected" : ""}`}
+                    className={`answer-option ${!customAnswer && answer === option.value ? "selected" : ""}`}
                     key={option.value}
                   >
                     <input
-                      checked={answer === option.value}
+                      checked={!customAnswer && answer === option.value}
                       name="answer"
-                      onChange={() => setAnswer(option.value)}
+                      onChange={() => { setCustomAnswer(false); setAnswer(option.value); }}
                       required
                       type="radio"
                       value={option.value}
@@ -211,10 +239,21 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
                     </span>
                   </label>
                 ))}
-              </fieldset>
-            ) : (
+              <label className={`answer-option ${customAnswer ? "selected" : ""}`}>
+                <input
+                  checked={customAnswer}
+                  name="answer"
+                  onChange={() => { setCustomAnswer(true); setAnswer(""); }}
+                  type="radio"
+                  value="custom"
+                />
+                <span><strong>Describe my answer</strong><small>Add context in your own words.</small></span>
+              </label>
+            </fieldset>
+
+            {customAnswer ? (
               <div className="field-group">
-                <label htmlFor="interview-answer">Your answer</label>
+                <label htmlFor="interview-answer">Describe your answer</label>
                 <textarea
                   autoFocus
                   id="interview-answer"
@@ -228,16 +267,30 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
                 />
                 <span className="answer-count">{answer.length}/2000</span>
               </div>
-            )}
+            ) : null}
+
+            {answer.trim() ? (
+              <div className="field-group loop-details-field">
+                <label htmlFor="interview-answer-details">Anything else to add to your loop? <span>(optional)</span></label>
+                <textarea
+                  id="interview-answer-details"
+                  maxLength={2000}
+                  onChange={(event) => setAnswerDetails(event.target.value)}
+                  placeholder="Add a constraint, preference, example, or edge case that the generated task should preserve."
+                  rows={4}
+                  value={answerDetails}
+                />
+                <span className="answer-count">{answerDetails.length}/2000</span>
+              </div>
+            ) : null}
 
             {answerError ? <p className="form-error">{answerError}</p> : null}
 
-            <div className="question-actions">
-              <button className="button" type="submit">
-                Save and continue
-              </button>
-              <span>Progress is saved in this browser.</span>
-            </div>
+            <ActionRow
+              disabledReason={!answer.trim() ? "Choose an answer or describe your own before continuing." : null}
+              primary={<button className="button" disabled={!answer.trim()} type="submit">Save and continue</button>}
+              stickyOnMobile
+            />
           </form>
         ) : null}
 
@@ -269,14 +322,10 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
             ) : null}
 
             <AnsweredSummary session={session} />
-            <div className="analysis-actions">
-              <Link className="button" href={`/projects/${projectId}/contract`}>
-                Review the execution contract
-              </Link>
-              <button className="button secondary" onClick={restartInterview} type="button">
-                Answer again
-              </button>
-            </div>
+            <ActionRow
+              destructive={<button className="button secondary" onClick={restartInterview} type="button">Answer again</button>}
+              primary={<Link className="button" href={`/projects/${projectId}/contract`}>Review the execution contract</Link>}
+            />
           </section>
         ) : null}
 
@@ -289,17 +338,13 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
               .map((issue) => (
                 <p key={`${issue.questionId}-${issue.message}`}>{issue.message}</p>
               ))}
-            <div className="analysis-actions">
-              <button className="button" onClick={restartInterview} type="button">
-                Correct my answer
-              </button>
-              <Link className="button secondary" href="/projects/new">
-                Start a different project
-              </Link>
-            </div>
+            <ActionRow
+              back={<Link className="button secondary" href="/projects/new">Start a different project</Link>}
+              primary={<button className="button" onClick={restartInterview} type="button">Correct my answer</button>}
+            />
           </section>
         ) : null}
-      </div>
+      </WorkflowGrid>
     </InterviewShell>
   );
 }
@@ -318,6 +363,7 @@ function AnsweredSummary({ session }: { session: InterviewSession }) {
             <li key={answer.questionId}>
               <strong>{question?.prompt}</strong>
               <p>{option?.label ?? answer.value}</p>
+              {answer.details ? <small>Added to loop: {answer.details}</small> : null}
             </li>
           );
         })}
@@ -328,12 +374,6 @@ function AnsweredSummary({ session }: { session: InterviewSession }) {
 
 function InterviewShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="interview-page">
-      <nav className="intake-nav" aria-label="Interview navigation">
-        <Link href="/">LoopZ</Link>
-        <Link href="/projects/new">New project</Link>
-      </nav>
-      {children}
-    </main>
+    <main className="interview-page">{children}</main>
   );
 }

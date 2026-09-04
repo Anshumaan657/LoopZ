@@ -52,6 +52,12 @@ describe("repair persistence and return",()=>{
     expect(beginRepairEvidenceReturn(awaiting,repair(),"2026-09-02T12:11:00.000Z")).toEqual(awaiting);
   });
 
+  it("accepts only real canonical ISO delivery timestamps",()=>{
+    expect(()=>markRepairDelivered(repair(),"2026-99-99T99:99:99.000Z")).toThrow("canonical ISO");
+    expect(()=>markRepairDelivered(repair(),"2026-09-02T12:09:00Z")).toThrow("canonical ISO");
+    expect(()=>markRepairDelivered(repair(),"2026-09-02T12:09:00.000Z")).not.toThrow();
+  });
+
   it("rejects mismatched histories, duplicate attempts, and repairs above the limit",()=>{
     expect(()=>validateRepairHistoryForRun({...run,repairAttempts:1},[])).toThrow("attempt count");
     values.set(repairStorageKey(run.runId),JSON.stringify([repair(),repair()]));
