@@ -10,5 +10,3 @@ for (const artifact of contractJsonSchemas) {
     "utf8",
   );
 }
-
-console.log(`Generated ${contractJsonSchemas.length} contract JSON Schemas.`);

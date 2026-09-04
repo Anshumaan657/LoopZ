@@ -84,6 +84,21 @@ describe("risk-based clarification interview", () => {
     expect(completed.currentQuestionId).toBeNull();
   });
 
+  it("preserves optional details alongside an MCQ answer", () => {
+    const analysis = acceptedAnalysis("Build checkout where customers can make a payment and verify success with an integration test.");
+    const session = createInterviewSession({ projectId, analysis, startedAt: now });
+    const answered = answerInterviewQuestion(
+      session,
+      "prototype",
+      "2026-08-28T00:01:00.000Z",
+      "Use the existing checkout styling and show a clearly labelled simulated success state.",
+    );
+    expect(answered.answers[0]).toMatchObject({
+      value: "prototype",
+      details: "Use the existing checkout styling and show a clearly labelled simulated success state.",
+    });
+  });
+
   it("blocks when project authorization is absent or uncertain", () => {
     const analysis = acceptedAnalysis(
       "Add a tested notification panel to a client company repository using its existing Next.js stack.",
@@ -100,6 +115,14 @@ describe("risk-based clarification interview", () => {
     );
     expect(blocked.status).toBe("blocked");
     expect(blocked.issues[0]).toEqual(expect.objectContaining({ severity: "blocking" }));
+  });
+
+  it("does not mistake client-side rendering for third-party ownership", () => {
+    for (const wording of ["client-side rendering", "client side rendering"]) {
+      const analysis = acceptedAnalysis(`Build a ${wording} settings view and verify it with a browser test.`);
+      const session = createInterviewSession({ projectId, analysis, startedAt: now });
+      expect(session.questions.map((question) => question.category)).not.toContain("authorization");
+    }
   });
 
   it("blocks production deployment but records real payments as an approval warning", () => {

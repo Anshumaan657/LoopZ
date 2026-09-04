@@ -24,7 +24,11 @@ const restrictedActions = [
 ] as const;
 
 function normalize(value: string): string {
-  return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function duplicateValues(values: readonly string[]): string[] {

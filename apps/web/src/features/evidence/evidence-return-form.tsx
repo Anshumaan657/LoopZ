@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 
 import {
   evidenceReturnDraftSchema,
@@ -9,6 +9,7 @@ import {
 } from "@loopz/contracts/evidence";
 
 import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { detectPotentialSecrets } from "./detect-potential-secrets";
 import styles from "./evidence-return.module.css";
 
 const STEPS = ["Source", "Agent output", "Your checks", "Criterion claims"] as const;
@@ -42,6 +43,30 @@ export function EvidenceReturnForm({
   const [step, setStep] = useState(0);
   const [furthestStep, setFurthestStep] = useState(0);
 
+  const secretWarnings = useMemo(() => ({
+    finalReport: detectPotentialSecrets(finalReport),
+    commandOutput: detectPotentialSecrets(commandOutput),
+    diffSummary: detectPotentialSecrets(diffSummary),
+    userObservedProblems: detectPotentialSecrets(userObservedProblems),
+    manualChecks: detectPotentialSecrets(manualChecks),
+    userNotes: detectPotentialSecrets(userNotes),
+  }), [commandOutput, diffSummary, finalReport, manualChecks, userNotes, userObservedProblems]);
+  const hasSecretWarnings = Object.values(secretWarnings).some((warnings) => warnings.length > 0);
+  const currentStepHasSecrets = step === 1
+    ? secretWarnings.finalReport.length + secretWarnings.commandOutput.length + secretWarnings.diffSummary.length > 0
+    : step === 2
+      ? secretWarnings.userObservedProblems.length + secretWarnings.manualChecks.length > 0
+      : step === 3 && secretWarnings.userNotes.length > 0;
+
+  function secretWarning(field: keyof typeof secretWarnings, id: string) {
+    const warnings = secretWarnings[field];
+    return warnings.length > 0 ? (
+      <small className={styles.fieldError} id={id} role="alert">
+        {warnings.map((warning) => warning.message).join(" ")}
+      </small>
+    ) : null;
+  }
+
   function focusField(id: string) {
     requestAnimationFrame(() => document.getElementById(id)?.focus());
   }
@@ -56,6 +81,10 @@ export function EvidenceReturnForm({
       if (step === 1 && !finalReport.trim()) {
         setFieldErrors((current) => ({ ...current, finalReport: "Paste the agent's final report before continuing." }));
         focusField("final-report");
+        return;
+      }
+      if (currentStepHasSecrets) {
+        setError("Remove or redact the possible secret before continuing. LoopZ will not save evidence containing a detected credential.");
         return;
       }
     }
@@ -81,6 +110,16 @@ export function EvidenceReturnForm({
       setStep(1);
       setFieldErrors((current) => ({ ...current, finalReport: "Paste the agent's final report before submitting." }));
       focusField("final-report");
+      return;
+    }
+    if (hasSecretWarnings) {
+      const firstStep = secretWarnings.finalReport.length || secretWarnings.commandOutput.length || secretWarnings.diffSummary.length
+        ? 1
+        : secretWarnings.userObservedProblems.length || secretWarnings.manualChecks.length
+          ? 2
+          : 3;
+      setStep(firstStep);
+      setError("Remove or redact every possible secret before submitting. Detected credentials are never intentionally stored.");
       return;
     }
     setBusy(true);
@@ -164,8 +203,11 @@ export function EvidenceReturnForm({
           <span>Final report</span>
           <small>Paste the full report, including criterion IDs and reported test results.</small>
           <textarea
-            aria-describedby={fieldErrors.finalReport ? "final-report-error" : undefined}
-            aria-invalid={Boolean(fieldErrors.finalReport)}
+            aria-describedby={[
+              fieldErrors.finalReport ? "final-report-error" : "",
+              secretWarnings.finalReport.length ? "final-report-secret-warning" : "",
+            ].filter(Boolean).join(" ") || undefined}
+            aria-invalid={Boolean(fieldErrors.finalReport || secretWarnings.finalReport.length)}
             id="final-report"
             required
             rows={12}
@@ -176,15 +218,18 @@ export function EvidenceReturnForm({
             }}
           />
           {fieldErrors.finalReport ? <small className={styles.fieldError} id="final-report-error">{fieldErrors.finalReport}</small> : null}
+          {secretWarning("finalReport", "final-report-secret-warning")}
         </label>
         <label className={styles.field}>
           <span>Test or build command output</span>
           <small>Use exact terminal output when available. Do not rewrite it.</small>
-          <textarea rows={8} value={commandOutput} onChange={(event) => setCommandOutput(event.target.value)} />
+          <textarea aria-describedby={secretWarnings.commandOutput.length ? "command-output-secret-warning" : undefined} aria-invalid={Boolean(secretWarnings.commandOutput.length)} rows={8} value={commandOutput} onChange={(event) => setCommandOutput(event.target.value)} />
+          {secretWarning("commandOutput", "command-output-secret-warning")}
         </label>
         <label className={styles.field}>
           <span>Diff or file-change summary</span>
-          <textarea rows={5} value={diffSummary} onChange={(event) => setDiffSummary(event.target.value)} />
+          <textarea aria-describedby={secretWarnings.diffSummary.length ? "diff-summary-secret-warning" : undefined} aria-invalid={Boolean(secretWarnings.diffSummary.length)} rows={5} value={diffSummary} onChange={(event) => setDiffSummary(event.target.value)} />
+          {secretWarning("diffSummary", "diff-summary-secret-warning")}
         </label>
       </section> : null}
 
@@ -193,11 +238,13 @@ export function EvidenceReturnForm({
         <h2>Add what you personally checked.</h2>
         <label className={styles.field}>
           <span>Problems you observed</span>
-          <textarea rows={4} value={userObservedProblems} onChange={(event) => setUserObservedProblems(event.target.value)} />
+          <textarea aria-describedby={secretWarnings.userObservedProblems.length ? "observed-problems-secret-warning" : undefined} aria-invalid={Boolean(secretWarnings.userObservedProblems.length)} rows={4} value={userObservedProblems} onChange={(event) => setUserObservedProblems(event.target.value)} />
+          {secretWarning("userObservedProblems", "observed-problems-secret-warning")}
         </label>
         <label className={styles.field}>
           <span>Manual checks performed</span>
-          <textarea rows={4} value={manualChecks} onChange={(event) => setManualChecks(event.target.value)} />
+          <textarea aria-describedby={secretWarnings.manualChecks.length ? "manual-checks-secret-warning" : undefined} aria-invalid={Boolean(secretWarnings.manualChecks.length)} rows={4} value={manualChecks} onChange={(event) => setManualChecks(event.target.value)} />
+          {secretWarning("manualChecks", "manual-checks-secret-warning")}
         </label>
       </section> : null}
 
@@ -230,14 +277,15 @@ export function EvidenceReturnForm({
         </div>
         <label className={styles.field}>
           <span>Additional notes</span>
-          <textarea rows={4} value={userNotes} onChange={(event) => setUserNotes(event.target.value)} />
+          <textarea aria-describedby={secretWarnings.userNotes.length ? "user-notes-secret-warning" : undefined} aria-invalid={Boolean(secretWarnings.userNotes.length)} rows={4} value={userNotes} onChange={(event) => setUserNotes(event.target.value)} />
+          {secretWarning("userNotes", "user-notes-secret-warning")}
         </label>
       </section> : null}
 
       <ActionRow
         back={step > 0 ? <button className="button secondary" onClick={() => moveTo(step - 1)} type="button">Back</button> : undefined}
-        disabledReason={busy ? "LoopZ is validating the evidence against the confirmed contract." : null}
-        primary={step < STEPS.length - 1 ? <button className="button" onClick={() => moveTo(step + 1)} type="button">Continue</button> : <button className="button" disabled={busy} type="submit">{busy ? "Validating evidence…" : "Submit execution evidence"}</button>}
+        disabledReason={currentStepHasSecrets ? "Remove or redact the detected credential before continuing." : busy ? "LoopZ is validating the evidence against the confirmed contract." : null}
+        primary={step < STEPS.length - 1 ? <button className="button" disabled={currentStepHasSecrets} onClick={() => moveTo(step + 1)} type="button">Continue</button> : <button className="button" disabled={busy || currentStepHasSecrets} type="submit">{busy ? "Validating evidence…" : "Submit execution evidence"}</button>}
         stickyOnMobile
       />
       </WorkflowGrid>

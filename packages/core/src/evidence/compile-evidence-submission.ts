@@ -23,10 +23,10 @@ type CompileEvidenceInput = {
 
 type EvidenceSource = "report" | "command" | "diff" | "observation" | "manual";
 
-function relevantSources(verificationText: string): Set<EvidenceSource> {
+export function relevantEvidenceSources(verificationText: string): Set<EvidenceSource> {
   const text = verificationText.toLowerCase();
   const sources = new Set<EvidenceSource>();
-  if (/test|command|build|lint|typecheck|terminal/.test(text)) sources.add("command");
+  if (/\b(?:run|execute|automated|unit|integration|e2e|ci|pipeline)\b.*\btest\b|\btest\b.*\b(?:command|script|suite|runner)\b|command|build|lint|typecheck|terminal/.test(text)) sources.add("command");
   if (/diff|file|source|change/.test(text)) sources.add("diff");
   if (/manual|browser|visual|screenshot|observ/.test(text)) {
     sources.add("observation");
@@ -121,7 +121,7 @@ export async function compileEvidenceSubmission(
     const evidenceIds: string[] = [];
     const reportId = sourceIds.get("report");
     if (reportId && reportMentions.has(criterion.id)) evidenceIds.push(reportId);
-    const relevance = relevantSources([
+    const relevance = relevantEvidenceSources([
       criterion.verificationMethod,
       ...criterion.requiredEvidence,
     ].join(" "));

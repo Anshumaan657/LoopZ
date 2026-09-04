@@ -1,7 +1,14 @@
 import { IdeaIntakeForm } from "../../../features/intake/idea-intake-form";
 import { WorkflowProgress } from "../../../components/workflow-progress";
 
-export default function NewProjectPage() {
+export default async function NewProjectPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mode?: string | string[] }>;
+}) {
+  const query = await searchParams;
+  const requestedMode = Array.isArray(query.mode) ? query.mode[0] : query.mode;
+  const initialMode = requestedMode === "geek" ? "geek" : "guided";
   return (
     <main className="intake-page">
       <header className="intake-hero">
@@ -14,7 +21,7 @@ export default function NewProjectPage() {
         </p>
       </header>
 
-      <IdeaIntakeForm />
+      <IdeaIntakeForm initialMode={initialMode} />
     </main>
   );
 }

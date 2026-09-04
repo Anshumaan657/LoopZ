@@ -17,7 +17,8 @@ describe("evidence return UI contracts", () => {
       "This cannot be undone",
     ]) expect(page).toContain(marker);
     expect(form).toContain("This is a claim, not verification");
-    expect(form).toContain('disabled={busy}');
+    expect(form).toContain('disabled={busy || currentStepHasSecrets}');
+    expect(form).toContain("Detected credentials are never intentionally stored");
     expect(pageStyles).toContain(":focus-visible");
     expect(pageStyles).toContain("@media (max-width: 600px)");
     expect(formStyles).toContain("@media (max-width: 560px)");

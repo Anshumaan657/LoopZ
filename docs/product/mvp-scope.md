@@ -34,6 +34,16 @@ A small web application or clearly bounded feature whose completion can be evalu
 - Multi-agent orchestration.
 - Guaranteed completion or token savings.
 
+## Infrastructure boundary (MVP)
+
+LoopZ MVP is a **browser-local Next.js application** using `localStorage` for workflow persistence.
+
+- No backend API, no database, no server-side model calls.
+- `DATABASE_URL` and `MODEL_API_KEY` in `.env.example` are reserved for post-MVP phases.
+- All contract generation, validation, assessment, and repair compilation run as browser JavaScript compiled from TypeScript.
+- Browser storage limits apply (typically 5–10 MB per origin); users can clear data at any time.
+- Return links contain UUIDv4 run IDs but are **not authentication or authorization credentials**. They resolve only when the matching run data exists in the same browser origin.
+
 ## MVP terminal states
 
 - Completed with submitted evidence.

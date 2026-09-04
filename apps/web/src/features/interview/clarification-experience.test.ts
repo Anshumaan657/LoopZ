@@ -10,6 +10,8 @@ describe("clarification experience", () => {
       "Choose the closest answer",
       "Describe my answer",
       "Describe your answer",
+      "Anything else to add to your loop?",
+      "answerDetails",
       "quickAnswerOptions(currentQuestion)",
     ]) expect(interview).toContain(marker);
 

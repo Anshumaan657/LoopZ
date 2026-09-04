@@ -124,4 +124,33 @@ describe("task run persistence", () => {
       generatedAt: "2026-09-02T12:00:00.000Z",
     })).toThrow("does not match");
   });
+
+  it("restores both run pointers when the second write fails", () => {
+    const version = versionFixture();
+    const previous = prepareTaskRun(version, {
+      runId: "33333333-3333-4333-8333-333333333333",
+      generatedAt: "2026-09-02T11:00:00.000Z",
+    }).run;
+    const contractKey = taskRunStorageKey(projectId, versionId);
+    const indexKey = runStorageKey(previous.runId);
+    values.set(contractKey, JSON.stringify(previous));
+    values.set(indexKey, JSON.stringify(previous));
+    let fail = true;
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => {
+        if (key === indexKey && fail) {
+          fail = false;
+          throw new DOMException("Quota exceeded", "QuotaExceededError");
+        }
+        values.set(key, value);
+      },
+      removeItem: (key: string) => values.delete(key),
+    });
+
+    expect(() => saveTaskRun({ ...previous, state: "copied", updatedAt: "2026-09-02T11:01:00.000Z" }))
+      .toThrow("Browser storage quota exceeded");
+    expect(JSON.parse(values.get(contractKey)!)).toEqual(previous);
+    expect(JSON.parse(values.get(indexKey)!)).toEqual(previous);
+  });
 });

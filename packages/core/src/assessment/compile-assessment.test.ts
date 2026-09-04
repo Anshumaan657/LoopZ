@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import { hashCanonicalValue } from "../canonical-hash";
 import {
   applyAssessmentCorrection,
+  classifyEvidenceRequirement,
   compileAssessment,
   normalizeEvidenceItem,
 } from "./compile-assessment";
@@ -82,6 +83,13 @@ async function assess(submission?: EvidenceSubmission) {
 }
 
 describe("compileAssessment", () => {
+  it("distinguishes automated test proof from manual browser observations", () => {
+    expect(classifyEvidenceRequirement("Run npm test")).toBe("deterministic");
+    expect(classifyEvidenceRequirement("Automated integration test output")).toBe("deterministic");
+    expect(classifyEvidenceRequirement("Manual browser check")).toBe("manual");
+    expect(classifyEvidenceRequirement("Visual observation of the responsive layout")).toBe("manual");
+  });
+
   it("verifies criteria only when submitted deterministic evidence supports them", async () => {
     const result = await assess();
     expect(result.criteria.every((item) => item.status === "verified_by_submitted_evidence")).toBe(true);

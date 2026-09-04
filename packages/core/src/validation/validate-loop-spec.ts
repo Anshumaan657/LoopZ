@@ -13,6 +13,7 @@ function normalizeScopeText(value: string): string {
   return value
     .toLocaleLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 

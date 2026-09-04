@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 import { renderCodexArtifacts, type CodexArtifactBundle } from "@loopz/codex-adapter";
 import type { ProviderNeutralTask } from "@loopz/contracts/task";
@@ -45,6 +45,8 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
   const [delivery, setDelivery] = useState<Delivery | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [delivering, setDelivering] = useState(false);
+  const deliveryInProgress = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -119,7 +121,9 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
       : delivery.universal.starterPrompt;
 
   async function copyTask() {
-    if (!delivery || !selectedArtifact) return;
+    if (!delivery || !selectedArtifact || deliveryInProgress.current) return;
+    deliveryInProgress.current = true;
+    setDelivering(true);
     setError(null);
     try {
       await copyExactTask(selectedArtifact.content);
@@ -129,11 +133,16 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
     } catch (cause) {
       setNotice(null);
       setError(cause instanceof Error ? cause.message : "The task could not be copied.");
+    } finally {
+      deliveryInProgress.current = false;
+      setDelivering(false);
     }
   }
 
   function downloadTask() {
-    if (!delivery || !selectedArtifact) return;
+    if (!delivery || !selectedArtifact || deliveryInProgress.current) return;
+    deliveryInProgress.current = true;
+    setDelivering(true);
     setError(null);
     try {
       downloadExactTask(selectedArtifact.filename, selectedArtifact.content);
@@ -143,6 +152,9 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
     } catch (cause) {
       setNotice(null);
       setError(cause instanceof Error ? cause.message : "The task could not be downloaded.");
+    } finally {
+      deliveryInProgress.current = false;
+      setDelivering(false);
     }
   }
 
@@ -247,8 +259,9 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
           </div>
           <div className={styles.overviewActions}>
             <ActionRow
-              back={<button className="button secondary" onClick={downloadTask} type="button">Download Markdown</button>}
-              primary={<button className="button" onClick={() => void copyTask()} type="button">Copy exact task</button>}
+              back={<button className="button secondary" disabled={delivering} onClick={downloadTask} type="button">Download Markdown</button>}
+              disabledReason={delivering ? "LoopZ is completing the selected delivery action." : null}
+              primary={<button className="button" disabled={delivering} onClick={() => void copyTask()} type="button">{delivering ? "Preparing…" : "Copy exact task"}</button>}
               stickyOnMobile
             />
           </div>

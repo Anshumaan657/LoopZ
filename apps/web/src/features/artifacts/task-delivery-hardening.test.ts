@@ -53,6 +53,7 @@ describe("task delivery hardening", () => {
       'role="tablist"', 'role="tab"', 'aria-selected=', 'role="tabpanel"',
       'onKeyDown=', 'event.key === "ArrowLeft"', 'tabIndex={format ===', 'tabIndex={0}',
       'aria-live="polite"', 'role="alert"', "Compatibility mode",
+      "deliveryInProgress.current", "disabled={delivering}",
     ]) expect(component).toContain(marker);
     expect(styles).toContain(":focus-visible");
     expect(styles).toContain("@media (max-width: 520px)");

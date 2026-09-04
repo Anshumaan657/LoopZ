@@ -16,6 +16,7 @@ import {
 
 import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
 import { WorkflowProgress } from "../../components/workflow-progress";
+import { safeGetItem, safeParseJSON, safeSetItem } from "../../lib/storage";
 
 type AcceptedIntakeAnalysis = Extract<IntakeAnalysis, { valid: true }>;
 
@@ -60,7 +61,7 @@ function quickAnswerOptions(question: InterviewQuestion): DisplayAnswerOption[] 
 
 function persistInterview(draft: StoredProjectDraft, session: InterviewSession) {
   const updatedDraft = { ...draft, interview: session };
-  localStorage.setItem(`loopz:project:${draft.projectId}`, JSON.stringify(updatedDraft));
+  safeSetItem(`loopz:project:${draft.projectId}`, JSON.stringify(updatedDraft));
   return updatedDraft;
 }
 
@@ -68,18 +69,21 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
   const [loaded, setLoaded] = useState<LoadedInterview | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [answer, setAnswer] = useState("");
+  const [answerDetails, setAnswerDetails] = useState("");
   const [customAnswer, setCustomAnswer] = useState(false);
   const [answerError, setAnswerError] = useState<string | null>(null);
 
   useEffect(() => {
-    const rawDraft = localStorage.getItem(`loopz:project:${projectId}`);
+    const storageKey = `loopz:project:${projectId}`;
+    const rawDraft = safeGetItem(storageKey);
     if (!rawDraft) {
       setLoadError("This project draft was not found in this browser.");
       return;
     }
 
     try {
-      const draft = JSON.parse(rawDraft) as StoredProjectDraft;
+      const draft = safeParseJSON<StoredProjectDraft>(rawDraft, storageKey);
+      if (!draft) throw new Error("The project draft is empty.");
       if (
         draft.projectId !== projectId ||
         !draft.analysis?.valid ||
@@ -95,8 +99,8 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
         : createInterviewSession({ projectId, analysis: draft.analysis });
       const updatedDraft = persistInterview(draft, session);
       setLoaded({ draft: updatedDraft, session });
-    } catch {
-      setLoadError("The saved project draft is invalid. Start a new intake to continue.");
+    } catch (cause) {
+      setLoadError(cause instanceof Error ? cause.message : "The saved project draft is invalid. Start a new intake to continue.");
     }
   }, [projectId]);
 
@@ -156,10 +160,16 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
               ),
             }
           : session;
-      const nextSession = answerInterviewQuestion(sessionWithCustomOption, answer);
+      const nextSession = answerInterviewQuestion(
+        sessionWithCustomOption,
+        answer,
+        new Date().toISOString(),
+        answerDetails,
+      );
       const nextDraft = persistInterview(draft, nextSession);
       setLoaded({ draft: nextDraft, session: nextSession });
       setAnswer("");
+      setAnswerDetails("");
       setCustomAnswer(false);
       setAnswerError(null);
     } catch (error) {
@@ -173,6 +183,7 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
     const nextDraft = persistInterview(draft, nextSession);
     setLoaded({ draft: nextDraft, session: nextSession });
     setAnswer("");
+    setAnswerDetails("");
     setCustomAnswer(false);
     setAnswerError(null);
   }
@@ -258,6 +269,21 @@ export function ClarificationInterview({ projectId }: { projectId: string }) {
               </div>
             ) : null}
 
+            {answer.trim() ? (
+              <div className="field-group loop-details-field">
+                <label htmlFor="interview-answer-details">Anything else to add to your loop? <span>(optional)</span></label>
+                <textarea
+                  id="interview-answer-details"
+                  maxLength={2000}
+                  onChange={(event) => setAnswerDetails(event.target.value)}
+                  placeholder="Add a constraint, preference, example, or edge case that the generated task should preserve."
+                  rows={4}
+                  value={answerDetails}
+                />
+                <span className="answer-count">{answerDetails.length}/2000</span>
+              </div>
+            ) : null}
+
             {answerError ? <p className="form-error">{answerError}</p> : null}
 
             <ActionRow
@@ -337,6 +363,7 @@ function AnsweredSummary({ session }: { session: InterviewSession }) {
             <li key={answer.questionId}>
               <strong>{question?.prompt}</strong>
               <p>{option?.label ?? answer.value}</p>
+              {answer.details ? <small>Added to loop: {answer.details}</small> : null}
             </li>
           );
         })}

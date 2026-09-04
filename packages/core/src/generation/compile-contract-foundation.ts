@@ -70,10 +70,11 @@ function pairInterviewDecisions(session: InterviewSession): InterviewDecision[] 
     if (!question) throw new Error(`Interview answer references missing question ${answer.questionId}.`);
 
     const selectedOption = question.options.find((option) => option.value === answer.value);
+    const baseValue = selectedOption?.label ?? answer.value;
     return {
       question,
       answer,
-      displayValue: selectedOption?.label ?? answer.value,
+      displayValue: answer.details ? `${baseValue}. Additional context: ${answer.details}` : baseValue,
     };
   });
 }

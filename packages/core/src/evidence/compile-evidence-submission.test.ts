@@ -6,7 +6,7 @@ import { confirmedContractVersionSchema } from "@loopz/contracts/versioning";
 import { describe, expect, it } from "vitest";
 
 import { hashCanonicalValue } from "../canonical-hash";
-import { compileEvidenceSubmission } from "./compile-evidence-submission";
+import { compileEvidenceSubmission, relevantEvidenceSources } from "./compile-evidence-submission";
 
 async function fixtures() {
   const loopSpec = JSON.parse(readFileSync(
@@ -43,6 +43,11 @@ async function fixtures() {
 }
 
 describe("compileEvidenceSubmission", () => {
+  it("maps automated tests to command evidence and manual checks to observations", () => {
+    expect([...relevantEvidenceSources("Run npm test")]).toEqual(["command"]);
+    expect([...relevantEvidenceSources("Manual browser check")]).toEqual(["observation", "manual"]);
+  });
+
   it("preserves raw evidence and maps it to every stable criterion ID", async () => {
     const input = await fixtures();
     const submission = await compileEvidenceSubmission({

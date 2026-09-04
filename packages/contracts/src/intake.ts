@@ -124,6 +124,7 @@ export const userAnswerSchema = z
   .object({
     questionId: z.string().regex(/^Q-[0-9]{3}$/),
     value: z.string().trim().min(1).max(2000),
+    details: z.string().trim().max(2000).optional(),
     answeredAt: z.string().datetime(),
   })
   .strict();

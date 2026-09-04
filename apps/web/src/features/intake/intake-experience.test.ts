@@ -11,7 +11,8 @@ describe("adaptive intake experience", () => {
     for (const marker of [
       '{ label: "Guided", href: "/projects/new?mode=guided" }',
       '{ label: "Geek", href: "/projects/new?mode=geek" }',
-      'useState<IntakeMode>("guided")',
+      'initialMode = "guided"',
+      "useState<IntakeMode>(initialMode)",
       "Go with your idea",
       "Super Geek",
       'mode === "geek"',

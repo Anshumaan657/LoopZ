@@ -164,6 +164,8 @@ code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospac
 .answer-count { justify-self: end; }
 .question-card > .field-group { margin-top: 20px; }
 .question-card > .field-group textarea { min-height: 136px; }
+.question-card > .loop-details-field textarea { min-height: 104px; }
+.loop-details-field label span { color: var(--muted); font-weight: 500; }
 .question-actions { margin-top: 24px; }
 .form-error { color: var(--danger); font-size: .875rem; }
 .form-error-summary { display: grid; gap: 2px; padding: 14px 16px; border: 1px solid rgba(255,155,155,.35); border-radius: var(--radius-sm); color: var(--danger); font-size: .875rem; }
@@ -175,6 +177,7 @@ code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospac
 .answered-summary ol { display: grid; gap: 16px; padding-left: 20px; }
 .answered-summary li strong { font-size: .875rem; }
 .answered-summary li p { margin: 4px 0 0; font-size: .875rem; }
+.answered-summary li small { display: block; margin-top: 5px; color: var(--muted); }
 
 @keyframes content-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 

@@ -52,6 +52,7 @@ function completeInterview(
       session,
       answers[question.category] ?? defaults[question.category],
       `2026-08-28T10:${String(minute).padStart(2, "0")}:00.000Z`,
+      minute === 1 ? "Keep keyboard focus visible." : "",
     );
     minute += 1;
   }
@@ -93,6 +94,7 @@ describe("compileContractFoundation", () => {
     expect(foundation.interviewDecisions[0]).toEqual(
       expect.objectContaining({ questionId: "Q-001", answeredAt: expect.any(String) }),
     );
+    expect(foundation.interviewDecisions.some((decision) => decision.answer.includes("Keep keyboard focus visible."))).toBe(true);
     expect(foundation.pendingSections).toEqual([
       "acceptance",
       "safety",

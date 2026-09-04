@@ -10,6 +10,7 @@ import {
 
 import { GooeyNav } from "../../components/gooey-nav";
 import { ActionRow, WorkflowGrid } from "../../components/workflow-layout";
+import { safeSetItem } from "../../lib/storage";
 
 type IntakeMode = "guided" | "geek";
 type ProjectStatus = "new" | "existing" | "unknown";
@@ -27,8 +28,8 @@ function splitTechnologyPreferences(value: string): string[] {
     .slice(0, 12);
 }
 
-export function IdeaIntakeForm() {
-  const [mode, setMode] = useState<IntakeMode>("guided");
+export function IdeaIntakeForm({ initialMode = "guided" }: { initialMode?: IntakeMode }) {
+  const [mode, setMode] = useState<IntakeMode>(initialMode);
   const [superGeek, setSuperGeek] = useState(false);
   const [originalPrompt, setOriginalPrompt] = useState("");
   const [projectStatus, setProjectStatus] = useState<ProjectStatus>("unknown");
@@ -37,6 +38,7 @@ export function IdeaIntakeForm() {
   const [analysis, setAnalysis] = useState<IntakeAnalysis | null>(null);
   const [projectId, setProjectId] = useState<string | null>(null);
   const [promptError, setPromptError] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export function IdeaIntakeForm() {
       return;
     }
     setPromptError(null);
+    setStorageError(null);
 
     const intake = {
       originalPrompt,
@@ -88,18 +91,22 @@ export function IdeaIntakeForm() {
         analysis: result,
       };
 
-      localStorage.setItem(`loopz:project:${draftProjectId}`, JSON.stringify(draft));
-      setProjectId(draftProjectId);
+      try {
+        safeSetItem(`loopz:project:${draftProjectId}`, JSON.stringify(draft));
+        setProjectId(draftProjectId);
+      } catch (cause) {
+        setStorageError(cause instanceof Error ? cause.message : "The project could not be saved in this browser.");
+      }
     }
   }
 
   return (
     <WorkflowGrid className="intake-layout">
       <form className="intake-form" noValidate onSubmit={submitIntake}>
-        {promptError ? (
+        {promptError || storageError ? (
           <div className="form-error-summary" role="alert" tabIndex={-1}>
-            <strong>Check the highlighted field.</strong>
-            <span>{promptError}</span>
+            <strong>{promptError ? "Check the highlighted field." : "This browser could not save the project."}</strong>
+            <span>{promptError ?? storageError}</span>
           </div>
         ) : null}
         <section className="mode-selector" aria-labelledby="mode-selector-title">
@@ -139,6 +146,7 @@ export function IdeaIntakeForm() {
             onChange={(event) => {
               setOriginalPrompt(event.target.value);
               if (promptError) setPromptError(null);
+              if (storageError) setStorageError(null);
             }}
             placeholder="For example: Add a customer feedback form to my existing Next.js app. Save submissions and show a clear success message."
             required
