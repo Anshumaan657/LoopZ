@@ -27,3 +27,4 @@ npm-debug.log*
 # Auto-generated Next.js agent instruction files
 /apps/web/AGENTS.md
 /apps/web/CLAUDE.md
+/.vercel/
