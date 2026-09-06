@@ -1,7 +1,7 @@
 .sidebar {
-  --line-accent: #fff;
-  --line-text: #8a8a8a;
-  --line-marker: #4a4a4a;
+  --line-accent: var(--accent);
+  --line-text: var(--muted);
+  --line-marker: var(--border-strong);
   position: sticky;
   top: 104px;
   align-self: start;
@@ -52,8 +52,8 @@
 .button:hover:not(:disabled), .button[aria-current="step"] { color: var(--line-accent); }
 .button[aria-current="step"] { font-weight: 680; }
 .button[aria-current="step"]::before { background: var(--line-accent); }
-.button:disabled { color: #454545; cursor: not-allowed; }
-.button:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 3px; }
+.button:disabled { color: var(--muted-soft); cursor: not-allowed; }
+.button:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 4px; border-radius: 3px; }
 .index { color: currentColor; font: 600 .8rem/1 ui-monospace, monospace; opacity: .65; }
 
 @media (max-width: 900px) { .sidebar { display: none; } }

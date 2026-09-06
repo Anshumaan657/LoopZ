@@ -75,7 +75,12 @@ Quality checks:
 ```bash
 npm run check
 npm run build
+npm audit
 ```
+
+## Interface system
+
+LoopZ uses a monochrome, evidence-first interface built around three layouts: a marquee homepage, a focused workflow workbench, and a long-form product boundary page. Geist Sans and Geist Mono provide the shared type system; the source design tokens live in [tokens.css](tokens.css), and [design.md](design.md) documents the component, motion, responsive, and accessibility rules.
 
 ## Architectural rule
 
@@ -89,6 +94,6 @@ web → universal-adapter → contracts
 
 ## Current status
 
-The MVP engineering scope across Phases 1–9 is implemented. Confirmed versions compile through integrity gates into deterministic provider-neutral tasks, render as Codex-optimized or Universal compatibility prompts, and create a contract-linked run. Users can return execution evidence, receive a conservative criterion-level assessment, run up to two focused repair attempts, and finish with an immutable completed or blocked resolution. The repair chain preserves every evidence submission and assessment revision while detecting repeated failures and enforcing human-review boundaries. See [the implementation roadmap](docs/product/implementation-roadmap.md), [Phase 9.2](docs/architecture/phase-9.2-repair-delivery-return.md), [Phase 9.3](docs/architecture/phase-9.3-terminal-resolution.md), and [Phase 9.4](docs/architecture/phase-9.4-release-readiness.md).
+The MVP engineering scope across Phases 1–9 is implemented. Confirmed versions compile through integrity gates into deterministic provider-neutral tasks, render as Codex-optimized or Universal compatibility prompts, and create a contract-linked run. Users can return execution evidence, receive a conservative criterion-level assessment, run up to two focused repair attempts, and finish with an immutable completed or blocked resolution. The repair chain preserves every evidence submission and assessment revision while detecting repeated failures and enforcing human-review boundaries. The responsive application shell and complete workflow now share one documented design system with keyboard focus, reduced-motion handling, mobile-safe actions, and evidence-first status presentation. See [the implementation roadmap](docs/product/implementation-roadmap.md), [Phase 9.2](docs/architecture/phase-9.2-repair-delivery-return.md), [Phase 9.3](docs/architecture/phase-9.3-terminal-resolution.md), and [Phase 9.4](docs/architecture/phase-9.4-release-readiness.md).
 
 Real participant fieldwork is still an external release dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product or market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. LoopZ assesses submitted evidence but does not independently rerun repositories. Use the [MVP release checklist](docs/validation/MVP_RELEASE_CHECKLIST.md) to record the remaining field and deployment gates.

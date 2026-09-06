@@ -1,16 +1,7 @@
-.progress {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 6px 18px;
-  max-width: 760px;
-  margin: 10px 0 0;
-  padding: 10px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  color: var(--muted);
-  font-size: .875rem;
-}
-
-.progress strong { color: var(--text); font-weight: 720; }
+.progress { display: grid; gap: var(--space-sm); max-width: 760px; margin: var(--space-xs) 0 0; padding: var(--space-sm) 0; border-block: var(--rule-thin) solid var(--border); color: var(--muted); font-size: var(--text-sm); }
+.summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--space-2xs) var(--space-md); }
+.summary strong { color: var(--text); font-weight: 720; }
+.progress ol { display: grid; grid-template-columns: repeat(8,minmax(0,1fr)); gap: 3px; margin: 0; padding: 0; list-style: none; }
+.progress li { min-width: 0; height: 2px; background: var(--border); }
+.progress li[data-state="complete"],.progress li[data-state="current"] { background: var(--accent); }
+.progress li span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
