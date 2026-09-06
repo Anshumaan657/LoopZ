@@ -2,6 +2,10 @@
 
 LoopZ turns a rough software request into a verifiable development contract for an AI coding agent, then assesses the returned evidence and creates a focused repair task when required.
 
+## Live application
+
+[Open LoopZ on Vercel](https://loopz-sable.vercel.app)
+
 ## MVP workflow
 
 ```text
@@ -96,4 +100,4 @@ web → universal-adapter → contracts
 
 The MVP engineering scope across Phases 1–9 is implemented. Confirmed versions compile through integrity gates into deterministic provider-neutral tasks, render as Codex-optimized or Universal compatibility prompts, and create a contract-linked run. Users can return execution evidence, receive a conservative criterion-level assessment, run up to two focused repair attempts, and finish with an immutable completed or blocked resolution. The repair chain preserves every evidence submission and assessment revision while detecting repeated failures and enforcing human-review boundaries. The responsive application shell and complete workflow now share one documented design system with keyboard focus, reduced-motion handling, mobile-safe actions, and evidence-first status presentation. See [the implementation roadmap](docs/product/implementation-roadmap.md), [Phase 9.2](docs/architecture/phase-9.2-repair-delivery-return.md), [Phase 9.3](docs/architecture/phase-9.3-terminal-resolution.md), and [Phase 9.4](docs/architecture/phase-9.4-release-readiness.md).
 
-Real participant fieldwork is still an external release dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product or market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. LoopZ assesses submitted evidence but does not independently rerun repositories. Use the [MVP release checklist](docs/validation/MVP_RELEASE_CHECKLIST.md) to record the remaining field and deployment gates.
+The MVP is deployed at [loopz-sable.vercel.app](https://loopz-sable.vercel.app). Real participant fieldwork is still an external validation dependency: 10–20 real task examples, at least five evidence-returning end-to-end runs, and the final exit/pivot review must be completed before claiming product or market validation. Browser storage is an MVP persistence mechanism, not durable server infrastructure. LoopZ assesses submitted evidence but does not independently rerun repositories. Use the [MVP release checklist](docs/validation/MVP_RELEASE_CHECKLIST.md) to record the remaining field gates.
