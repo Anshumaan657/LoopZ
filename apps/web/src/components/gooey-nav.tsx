@@ -63,7 +63,7 @@ export function GooeyNav({
         x: Math.cos(angle) * distance,
         y: Math.sin(angle) * Math.min(distance, particleR / 2),
         duration: animationTime + Math.random() * timeVariance,
-        color: point % 2 === 0 ? "#ffffff" : "#8a8a8a",
+        color: point % 2 === 0 ? "var(--accent)" : "var(--muted)",
       };
     });
     setParticles(next);

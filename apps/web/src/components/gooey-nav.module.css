@@ -1,6 +1,6 @@
 .container {
-  --gooey-active: #ffffff;
-  --gooey-inactive: #686868;
+  --gooey-active: var(--accent);
+  --gooey-inactive: var(--muted);
   position: relative;
   display: inline-flex;
   min-height: 64px;
@@ -54,8 +54,8 @@
 }
 
 .link:hover { color: var(--text); }
-.link:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-.active .link { color: #080808; }
+.link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.active .link { color: var(--color-accent-ink); }
 
 .pill {
   position: absolute;
@@ -84,7 +84,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--particle-color, #fff);
+  background: var(--particle-color, var(--accent));
   animation: particle-pop var(--particle-time) var(--ease) both;
 }
 

@@ -1,0 +1,9 @@
+{
+  "scannedAt": "2026-09-06",
+  "framework": "Next.js 16.3.1 App Router with React 19",
+  "fontStack": "Geist Sans and Geist Mono",
+  "palette": "LoopZ monochrome OKLCH tokens",
+  "motion": "CSS transform and opacity only",
+  "spacing": "Named 4-point scale",
+  "designSystem": "design.md"
+}

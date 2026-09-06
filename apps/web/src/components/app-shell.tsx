@@ -10,13 +10,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link className="wordmark" href="/" aria-label="LoopZ home">LoopZ</Link>
           <nav aria-label="Primary navigation">
             <Link href="/about">About</Link>
-            <Link href="/projects/new">New project</Link>
+            <Link className="nav-cta" href="/projects/new">Start a project</Link>
           </nav>
         </div>
       </header>
       <div className="app-content" id="main-content" tabIndex={-1}>{children}</div>
       <footer className="site-footer">
-        <p>© {new Date().getFullYear()} LoopZ. All rights reserved.</p>
+        <p>© 2026 LoopZ. All rights reserved.</p>
       </footer>
     </div>
   );
