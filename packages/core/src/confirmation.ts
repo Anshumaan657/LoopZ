@@ -24,6 +24,9 @@ export function compileConfirmedLoopSpec(draftInput: SafetyContractDraft) {
       `The contract cannot be confirmed: ${validation.issues.map((issue) => issue.message).join("; ")}`,
     );
   }
+  const hasDeferredFollowUp = draft.scope.excluded.some((item) =>
+    item.description.startsWith("Deferred follow-up:"),
+  );
 
   const loopSpec = loopSpecLiteSchema.parse({
     schemaVersion: draft.schemaVersion,
@@ -77,6 +80,9 @@ export function compileConfirmedLoopSpec(draftInput: SafetyContractDraft) {
         "Verification commands and results",
         "Criterion-by-criterion status and evidence references",
         "Blockers, assumptions, approvals, and remaining work",
+        ...(hasDeferredFollowUp
+          ? ["Deferred follow-up items carried forward without implementation"]
+          : []),
       ],
       criterionIdReferencesRequired: true,
       evidenceReferencesRequired: true,

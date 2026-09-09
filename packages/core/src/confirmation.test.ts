@@ -97,6 +97,26 @@ describe("contract confirmation", () => {
     expect(loopSpec.finalReport.criterionIdReferencesRequired).toBe(true);
   });
 
+  it("requires deferred follow-up work to be carried into the final report", () => {
+    const draft = fixture();
+    draft.scope.excluded.push({
+      id: "SCOPE-OUT-001",
+      description: "Deferred follow-up: weekly insights",
+      provenance: {
+        value: "Deferred follow-up: weekly insights",
+        source: "user_provided",
+        confidence: 1,
+        explanation: "Confirmed during scope clarification.",
+        confirmedByUser: false,
+      },
+    });
+
+    const loopSpec = compileConfirmedLoopSpec(draft);
+    expect(loopSpec.finalReport.requiredFields).toContain(
+      "Deferred follow-up items carried forward without implementation",
+    );
+  });
+
   it("creates deterministic content hashes and immutable version metadata", async () => {
     const input = {
       draft: fixture(),

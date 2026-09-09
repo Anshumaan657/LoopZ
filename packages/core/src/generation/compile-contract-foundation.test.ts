@@ -152,6 +152,47 @@ describe("compileContractFoundation", () => {
       }),
     );
     expect(foundation.environment.projectContext.value).toContain("new project from scratch");
+    expect(foundation.request.taskType).toEqual(
+      expect.objectContaining({
+        value: "new_web_application",
+        source: "user_provided",
+        confirmedByUser: true,
+      }),
+    );
+  });
+
+  it("turns a narrowed scope answer into current deliverables and explicit deferred follow-up", () => {
+    const intake: IdeaIntake = {
+      originalPrompt:
+        "I want to make a habit tracker app for myself. I should be able to add my own habits. Every day I want to mark a habit done. Show streaks with exciting visuals. Show a monthly calendar. Give encouraging nudges. Compare weekly stats and longest streaks. Let me add daily notes.",
+      mode: "guided",
+      projectStatus: "unknown",
+      projectContext: "",
+      technologyPreferences: [],
+    };
+    const analysis = analyze(intake);
+    const interview = completeInterview(analysis, {
+      repository_context: "This is a brand-new project from scratch with no existing repository.",
+      verification: "Verify the complete flow in a browser.",
+      scope:
+        "Build the smallest working version first. Core (build now): add custom habits, one-click mark-done, basic streak count, calendar/grid view. Deferred to a later pass: fancy streak visuals, encouraging gentle nudges, weekly stats comparisons, longest-streak tracking, and daily notes.",
+    });
+    const foundation = compileContractFoundation({ projectId, intake, analysis, interview });
+
+    expect(foundation.request.taskType.value).toBe("new_web_application");
+    expect(foundation.objective.deliverables.map((item) => item.description)).toEqual([
+      "add custom habits",
+      "one-click mark-done",
+      "basic streak count",
+      "calendar/grid view",
+    ]);
+    expect(foundation.scope.excluded.map((item) => item.description)).toEqual([
+      "Deferred follow-up: fancy streak visuals",
+      "Deferred follow-up: encouraging gentle nudges",
+      "Deferred follow-up: weekly stats comparisons",
+      "Deferred follow-up: longest-streak tracking",
+      "Deferred follow-up: daily notes",
+    ]);
   });
 
   it("records an explicitly excluded capability outside included scope", () => {

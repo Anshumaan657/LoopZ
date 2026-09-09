@@ -85,6 +85,26 @@ describe("renderUniversalArtifacts", () => {
     expect(content).toContain("Contract confirmation is not runtime approval");
   });
 
+  it("renders deferred work as an explicit follow-up boundary", () => {
+    const task = validTask();
+    task.contract.scope.excluded.push({
+      id: "SCOPE-OUT-002",
+      description: "Deferred follow-up: daily notes",
+      provenance: {
+        value: "Deferred follow-up: daily notes",
+        source: "user_provided",
+        confidence: 1,
+        explanation: "Confirmed during scope clarification.",
+        confirmedByUser: true,
+      },
+    });
+
+    const content = renderUniversalArtifacts(task, options).agentTask.content;
+    expect(content).toContain("## Deferred Follow-up Work");
+    expect(content).toContain("daily notes");
+    expect(content).toContain("Preserve them in the final report");
+  });
+
   it("is deterministic for fixed inputs", () => {
     const task = validTask();
     expect(renderUniversalArtifacts(task, options)).toEqual(renderUniversalArtifacts(task, options));

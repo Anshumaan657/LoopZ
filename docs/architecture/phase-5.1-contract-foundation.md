@@ -24,6 +24,8 @@ The `foundation_draft` contains:
 - Extracted goal with its original provenance.
 - Stable preliminary requirements using `REQ-001` identifiers.
 - Included and excluded scope using `SCOPE-IN-001` and `SCOPE-OUT-001` identifiers.
+- Deferred follow-up work retained as `SCOPE-OUT` items prefixed with `Deferred follow-up:` so it
+  remains outside the current run without disappearing from generated tasks or final reports.
 - User constraints represented as assumptions or explicit exclusions.
 - Project status, repository context, and technology preferences.
 - Every interview question and answer with its timestamp.
@@ -31,6 +33,12 @@ The `foundation_draft` contains:
 
 Original-request items remain unconfirmed until contract review. Direct interview answers are marked
 as user-confirmed decisions.
+
+Repository clarification is authoritative. When the user confirms that an inferred existing-app task
+is actually a new project (or the reverse), compilation reconciles both project status and task type.
+An explicit scope answer with build-now and deferred lists also replaces the broader preliminary
+capability extraction for the current run; primary-flow and scope metadata are not emitted as fake
+deliverables.
 
 ## Determinism
 

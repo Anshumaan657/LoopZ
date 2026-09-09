@@ -37,6 +37,14 @@ describe("analyzeIdeaIntake", () => {
     );
   });
 
+  it("does not mistake adding capabilities in a new idea for an existing-app change", () => {
+    const result = analyze(
+      "I want to make a habit tracker app for myself. I should be able to add my own habits and mark them done each day.",
+    );
+
+    expect(taskType(result)).toBe("new_web_application");
+  });
+
   it("preserves the original prompt and records inferred provenance", () => {
     const originalPrompt = "Please build a dashboard where customers can view recent feedback.";
     const result = analyze(originalPrompt);
@@ -86,6 +94,17 @@ describe("analyzeIdeaIntake", () => {
       "Require validation and automated tests",
     ]);
     expect(result.intent.requestedCapabilities).not.toContain("js website");
+  });
+
+  it("keeps concrete capabilities that appear after the eighth sentence", () => {
+    const result = analyze(
+      "I want to build a tracker for myself. Users can add habits. Users can mark habits done. Show a streak. Show a calendar. Save progress locally. Make it responsive. Include keyboard controls. Show an encouraging message. Let users add daily notes.",
+    );
+
+    expect(result.valid).toBe(true);
+    if (!result.valid) return;
+    expect(result.intent.requestedCapabilities).toContain("Let users add daily notes");
+    expect(result.intent.requestedCapabilities).not.toContain("I want to build a tracker for myself");
   });
 
   it("detects blocking authentication decisions", () => {

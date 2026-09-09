@@ -147,9 +147,16 @@ function inferredCommands(foundation: ContractFoundation): string[] {
     ...foundation.environment.technologyPreferences.map((item) => item.value),
   ].join(" ");
 
-  if (/\b(rust|cargo)\b/i.test(context)) return ["cargo test", "cargo build"];
-  if (/\b(python|django|flask|fastapi|pytest)\b/i.test(context)) return ["pytest"];
-  if (/\b(golang|go module|go project)\b/i.test(context)) return ["go test ./..."];
+  const existingProject = foundation.environment.projectStatus.value === "existing";
+  if (/\b(rust|cargo)\b/i.test(context)) {
+    return existingProject ? ["cargo test", "cargo build"] : ["cargo build"];
+  }
+  if (/\b(python|django|flask|fastapi|pytest)\b/i.test(context)) {
+    return existingProject ? ["pytest"] : ["python -m compileall ."];
+  }
+  if (/\b(golang|go module|go project)\b/i.test(context)) {
+    return existingProject ? ["go test ./..."] : ["go build ./..."];
+  }
 
   const packageManager = /\bpnpm\b/i.test(context)
     ? "pnpm"
@@ -158,7 +165,9 @@ function inferredCommands(foundation: ContractFoundation): string[] {
       : /\bbun\b/i.test(context)
         ? "bun"
         : "npm";
-  return [`${packageManager} test`, `${packageManager} run build`];
+  return existingProject
+    ? [`${packageManager} test`, `${packageManager} run build`]
+    : [`${packageManager} run build`];
 }
 
 function verificationPlan(foundation: ContractFoundation): string | undefined {

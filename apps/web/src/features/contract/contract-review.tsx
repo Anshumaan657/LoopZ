@@ -150,7 +150,7 @@ export function ContractReview({ projectId }: { projectId: string }) {
         {step === 1 ? (
           <ReviewSection title="Scope" description="Make the boundary explicit before implementation begins.">
             <ScopeEditor label="Included" items={loaded.input.includedScope} onChange={(index, value) => updateInput((input) => ({ ...input, includedScope: input.includedScope.map((item, itemIndex) => itemIndex === index ? { ...item, description: value } : item) }))} />
-            <ScopeEditor label="Excluded" items={loaded.input.excludedScope} onChange={(index, value) => updateInput((input) => ({ ...input, excludedScope: input.excludedScope.map((item, itemIndex) => itemIndex === index ? { ...item, description: value } : item) }))} />
+            <CategorizedExcludedScopeEditor input={loaded.input} updateInput={updateInput} />
             {loaded.input.assumptions.length > 0 ? <div className={styles.scopeGroup}><strong>Assumptions</strong>{loaded.input.assumptions.map((assumption, index) => <label key={`assumption-${index}`}><span>{index + 1}</span><input value={assumption} onChange={(event) => updateInput((input) => ({ ...input, assumptions: input.assumptions.map((item, itemIndex) => itemIndex === index ? event.target.value : item) }))} /></label>)}</div> : null}
           </ReviewSection>
         ) : null}
@@ -201,13 +201,42 @@ export function ContractReview({ projectId }: { projectId: string }) {
 }
 
 function ReviewSummary({ input, restrictions, onEdit }: { input: ContractReviewInput; restrictions: string[]; onEdit: (step: number) => void }) {
+  const deferredCount = input.excludedScope.filter((item) => item.description.startsWith("Deferred follow-up:")).length;
+  const excludedCount = input.excludedScope.length - deferredCount;
   return <section className={styles.review}>
     <header><h2>Review your contract</h2><p>Check the full execution boundary before saving it.</p></header>
     <SummaryBlock title="Deliverables" onEdit={() => onEdit(0)}><strong>{input.goal}</strong><ul>{input.deliverables.map((item) => <li key={item.id}><code>{item.id}</code>{item.description}<span>{item.priority}</span></li>)}</ul></SummaryBlock>
-    <SummaryBlock title="Scope" onEdit={() => onEdit(1)}><p>{input.includedScope.length} included · {input.excludedScope.length} excluded · {input.assumptions.length} assumptions</p></SummaryBlock>
+    <SummaryBlock title="Scope" onEdit={() => onEdit(1)}><p>{input.includedScope.length} included · {deferredCount} deferred · {excludedCount} excluded · {input.assumptions.length} assumptions</p></SummaryBlock>
     <SummaryBlock title="Acceptance & Proof" onEdit={() => onEdit(2)}><p>{input.criteria.length} acceptance criteria · {input.verificationCommands.length} verification commands</p></SummaryBlock>
     <details className={styles.restrictions}><summary>Restricted actions</summary><ul>{restrictions.map((item) => <li key={item}>{item}</li>)}</ul></details>
   </section>;
+}
+
+function CategorizedExcludedScopeEditor({
+  input,
+  updateInput,
+}: {
+  input: ContractReviewInput;
+  updateInput: (updater: (input: ContractReviewInput) => ContractReviewInput) => void;
+}) {
+  const deferredPrefix = "Deferred follow-up:";
+  const categorized = input.excludedScope.map((item, originalIndex) => ({ item, originalIndex }));
+  const excluded = categorized.filter(({ item }) => !item.description.startsWith(deferredPrefix));
+  const deferred = categorized.filter(({ item }) => item.description.startsWith(deferredPrefix));
+  const update = (originalIndex: number, value: string, deferredItem: boolean) =>
+    updateInput((current) => ({
+      ...current,
+      excludedScope: current.excludedScope.map((item, index) =>
+        index === originalIndex
+          ? { ...item, description: deferredItem ? `${deferredPrefix} ${value}` : value }
+          : item,
+      ),
+    }));
+
+  return <>
+    <ScopeEditor label="Excluded" items={excluded.map(({ item }) => item)} onChange={(index, value) => update(excluded[index]!.originalIndex, value, false)} />
+    <ScopeEditor label="Deferred follow-up" items={deferred.map(({ item }) => ({ ...item, description: item.description.slice(deferredPrefix.length).trim() }))} onChange={(index, value) => update(deferred[index]!.originalIndex, value, true)} />
+  </>;
 }
 
 function SummaryBlock({ title, children, onEdit }: { title: string; children: React.ReactNode; onEdit: () => void }) {

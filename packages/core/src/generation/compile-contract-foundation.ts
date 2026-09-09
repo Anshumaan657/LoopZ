@@ -42,6 +42,13 @@ type ScopeCandidate = {
   confirmedInInterview: boolean;
 };
 
+type ScopeBoundary = {
+  included: string[];
+  deferred: string[];
+};
+
+const DEFERRED_SCOPE_PREFIX = "Deferred follow-up:";
+
 function normalizeForDeduplication(value: string): string {
   return value
     .toLocaleLowerCase()
@@ -97,7 +104,7 @@ function scopePrefix(category: InterviewQuestion["category"]): string {
 
 function includedInterviewScope(decisions: InterviewDecision[]): string[] {
   return decisions.flatMap(({ question, answer, displayValue }) => {
-    if (["authorization", "repository_context", "verification"].includes(question.category)) {
+    if (["authorization", "primary_flow", "repository_context", "verification", "scope"].includes(question.category)) {
       return [];
     }
 
@@ -119,6 +126,54 @@ function includedInterviewScope(decisions: InterviewDecision[]): string[] {
 
     return [`${scopePrefix(question.category)}: ${displayValue}`];
   });
+}
+
+function splitScopeItems(value: string): string[] {
+  return value
+    .replace(/^\s*(?:and\s+)?/i, "")
+    .split(/\s*(?:,|;|\band\b)\s*/i)
+    .map((item) => item.replace(/^[\s:.-]+|[\s.]+$/g, "").trim())
+    .filter((item) => item.length >= 3);
+}
+
+function parseScopeBoundary(decision: InterviewDecision | undefined): ScopeBoundary {
+  if (!decision) return { included: [], deferred: [] };
+  if (
+    !decision.answer.details &&
+    [
+      "Build the smallest working version",
+      "Include the complete described flow",
+      "Help me narrow the scope",
+    ].includes(decision.answer.value)
+  ) {
+    return { included: [], deferred: [] };
+  }
+
+  const answer = decision.answer.details || decision.answer.value;
+  const deferredMarker = /\b(?:deferred(?:\s+to\s+(?:a\s+)?later\s+pass)?|postpone(?:d)?|later|follow[- ]?up)\b\s*(?::|—|-)?\s*/i;
+  const deferredMatch = deferredMarker.exec(answer);
+  const beforeDeferred = deferredMatch ? answer.slice(0, deferredMatch.index) : answer;
+  const afterDeferred = deferredMatch
+    ? answer.slice(deferredMatch.index + deferredMatch[0].length)
+    : "";
+  const includedMarker = /(?:\bcore\b(?:\s*\([^)]*\))?|\bbuild\s+now\b|\binclude(?:d)?\b|\bmvp\b|\bfirst\s+version\b)\s*(?::|—|-)\s*/gi;
+  let includedText = beforeDeferred;
+  let marker: RegExpExecArray | null;
+  let foundIncludedMarker = false;
+  while ((marker = includedMarker.exec(beforeDeferred))) {
+    foundIncludedMarker = true;
+    includedText = beforeDeferred.slice(marker.index + marker[0].length);
+  }
+  if (!foundIncludedMarker) {
+    includedText = includedText
+      .replace(/^.*?\b(?:implement|build|include)\b\s*/i, "")
+      .replace(/\s+and\s*$/i, "");
+  }
+
+  return {
+    included: splitScopeItems(includedText),
+    deferred: splitScopeItems(afterDeferred),
+  };
 }
 
 function excludedInterviewScope(decisions: InterviewDecision[]): string[] {
@@ -219,6 +274,29 @@ function resolveProjectStatus(
     confidence: 0.8,
     explanation: "Inferred from the supported task classification.",
     confirmedByUser: false,
+  });
+}
+
+function resolveTaskType(
+  original: Decision<TaskType>,
+  projectStatus: Decision<"new" | "existing">,
+  repositoryDecision: InterviewDecision | undefined,
+): Decision<TaskType> {
+  if (!repositoryDecision || original.value === "landing_page") return original;
+
+  const reconciled = projectStatus.value === "new"
+    ? "new_web_application"
+    : original.value === "new_web_application"
+      ? "existing_app_feature"
+      : original.value;
+
+  if (reconciled === original.value) return original;
+  return decision({
+    value: reconciled,
+    source: "user_provided",
+    confidence: 1,
+    explanation: `Reconciled with the user-confirmed repository status in ${repositoryDecision.question.id}.`,
+    confirmedByUser: true,
   });
 }
 
@@ -326,6 +404,8 @@ export function compileContractFoundation(input: ContractFoundationInput): Contr
     projectStatus.value,
     repositoryDecision,
   );
+  const taskType = resolveTaskType(analysis.intent.taskType, projectStatus, repositoryDecision);
+  const scopeBoundary = parseScopeBoundary(findDecision(pairedDecisions, "scope"));
   const excludedCandidates = uniqueScopeCandidates([
     ...explicitConstraintExclusions(analysis.intent.constraints).map((description) => ({
       description,
@@ -335,12 +415,22 @@ export function compileContractFoundation(input: ContractFoundationInput): Contr
       description,
       confirmedInInterview: true,
     })),
-  ]);
-  const includedCandidates = uniqueScopeCandidates([
-    ...analysis.intent.requestedCapabilities.map((description) => ({
-      description,
-      confirmedInInterview: false,
+    ...scopeBoundary.deferred.map((description) => ({
+      description: `${DEFERRED_SCOPE_PREFIX} ${description}`,
+      confirmedInInterview: true,
     })),
+  ]);
+  const requestedCandidates = scopeBoundary.included.length > 0
+    ? scopeBoundary.included.map((description) => ({
+        description,
+        confirmedInInterview: true,
+      }))
+    : analysis.intent.requestedCapabilities.map((description) => ({
+        description,
+        confirmedInInterview: false,
+      }));
+  const includedCandidates = uniqueScopeCandidates([
+    ...requestedCandidates,
     ...includedInterviewScope(pairedDecisions).map((description) => ({
       description,
       confirmedInInterview: true,
@@ -377,7 +467,7 @@ export function compileContractFoundation(input: ContractFoundationInput): Contr
     },
     request: {
       originalPrompt: intake.originalPrompt,
-      taskType: analysis.intent.taskType,
+      taskType,
     },
     objective: {
       goal: analysis.intent.goal,

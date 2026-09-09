@@ -189,6 +189,21 @@ describe("compileAcceptanceContract", () => {
     expect(second).toEqual(first);
   });
 
+  it("does not invent a test command for a new project with browser verification", () => {
+    const foundation = foundationFixture();
+    foundation.environment.projectStatus.value = "new";
+    foundation.environment.projectContext.value = "Start a new project with a stable web stack.";
+    foundation.interviewDecisions[0]!.answer = "Verify the complete flow in a browser.";
+
+    const draft = compileAcceptanceContract(foundation);
+
+    expect(draft.acceptance.verificationCommands).toEqual(["npm run build"]);
+    expect(draft.acceptance.verificationCommands).not.toContain("npm test");
+    expect(draft.acceptance.criteria[0]?.verificationMethod).toContain(
+      "Verify the complete flow in a browser.",
+    );
+  });
+
   it("keeps prototype payment criteria non-transactional", () => {
     const foundation = foundationFixture();
     foundation.objective.deliverables = [

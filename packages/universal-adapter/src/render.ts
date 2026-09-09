@@ -17,6 +17,7 @@ import {
 const DEFAULT_GENERATOR_VERSION = "0.2.0";
 const DEFAULT_ADAPTER_VERSION = "0.1.0";
 const DEFAULT_TEMPLATE_VERSION = "0.1.0";
+const DEFERRED_SCOPE_PREFIX = "Deferred follow-up:";
 type RenderOptions = Required<UniversalRenderOptions>;
 
 function dataBlock(value: string): string {
@@ -56,6 +57,21 @@ function artifact(kind: ArtifactKind, filename: string, content: string, options
 
 function records<T extends { id: string; description: string }>(items: readonly T[], empty = "None"): string {
   return items.length === 0 ? dataBlock(empty) : items.map((item) => `### ${item.id}\n\n${dataBlock(item.description)}`).join("\n\n");
+}
+
+function deferredScope(task: ProviderNeutralTask) {
+  return task.contract.scope.excluded.filter((item) => item.description.startsWith(DEFERRED_SCOPE_PREFIX));
+}
+
+function immediateExclusions(task: ProviderNeutralTask) {
+  return task.contract.scope.excluded.filter((item) => !item.description.startsWith(DEFERRED_SCOPE_PREFIX));
+}
+
+function deferredRecords(task: ProviderNeutralTask): string {
+  return records(deferredScope(task).map((item) => ({
+    ...item,
+    description: item.description.slice(DEFERRED_SCOPE_PREFIX.length).trim(),
+  })));
 }
 
 function criteria(task: ProviderNeutralTask): string {
@@ -125,7 +141,13 @@ ${records(spec.scope.included)}
 
 ## Excluded Scope
 
-${records(spec.scope.excluded)}
+${records(immediateExclusions(task))}
+
+## Deferred Follow-up Work
+
+These items are intentionally outside this run. Preserve them in the final report; do not implement them unless the contract is revised and reconfirmed.
+
+${deferredRecords(task)}
 
 ## Confirmed Assumptions
 

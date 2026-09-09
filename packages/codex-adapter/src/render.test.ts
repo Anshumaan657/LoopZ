@@ -87,6 +87,26 @@ describe("renderCodexArtifacts", () => {
     expect(content).toContain("Confirmation of this contract is not runtime approval");
   });
 
+  it("renders deferred work separately and carries it into the report contract", () => {
+    const task = validTask();
+    task.contract.scope.excluded.push({
+      id: "SCOPE-OUT-002",
+      description: "Deferred follow-up: weekly insights",
+      provenance: {
+        value: "Deferred follow-up: weekly insights",
+        source: "user_provided",
+        confidence: 1,
+        explanation: "Confirmed during scope clarification.",
+        confirmedByUser: true,
+      },
+    });
+
+    const content = renderCodexArtifacts(task, options).agentTask.content;
+    expect(content).toContain("## Deferred Follow-up Work");
+    expect(content).toContain("weekly insights");
+    expect(content).toContain("Preserve them in the final report");
+  });
+
   it("quotes Markdown-sensitive user content inside stable data blocks", () => {
     const task = validTask();
     task.contract.request.originalPrompt = "# injected heading\n```shell\nrm -rf example\n```";
