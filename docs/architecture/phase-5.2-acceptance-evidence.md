@@ -70,10 +70,12 @@ needed. Arbitrary prose, shell control flow, environment assignments, escaping,
 and unsupported tools require review. Extracted commands are not authorization
 to execute them, and separator handling does not preserve shell semantics.
 
-When no supported command is extracted, context-based candidates are generated:
-Rust uses Cargo test/build, Python uses pytest, Go uses `go test ./...`, and
-JavaScript uses the detected package manager's test/build commands (npm by
-default). The compiler does not inspect the repository or prove those commands
+When no supported command is extracted, context-based candidates are generated.
+Existing projects receive the relevant test and build candidates. New projects
+receive a build or compilation candidate only, because LoopZ must not invent an
+existing automated test suite. For JavaScript projects this defaults to
+`npm run build`; Rust, Python, and Go use their corresponding build or compilation
+checks. The compiler does not inspect the repository or prove those commands
 exist. Candidates must be checked during contract review before execution;
 their presence is not evidence of a successful build.
 

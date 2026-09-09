@@ -18,6 +18,7 @@ import {
 const DEFAULT_GENERATOR_VERSION = "0.2.0";
 const DEFAULT_ADAPTER_VERSION = "0.2.0";
 const DEFAULT_TEMPLATE_VERSION = "0.2.0";
+const DEFERRED_SCOPE_PREFIX = "Deferred follow-up:";
 
 type RenderOptions = Required<CodexRenderOptions>;
 
@@ -77,6 +78,27 @@ function scopeItems(items: ProviderNeutralTask["contract"]["scope"]["included"])
   return items.length === 0
     ? dataBlock("None")
     : items.map((item) => `### ${item.id}\n\n${dataBlock(item.description)}`).join("\n\n");
+}
+
+function deferredScope(task: ProviderNeutralTask) {
+  return task.contract.scope.excluded.filter((item) =>
+    item.description.startsWith(DEFERRED_SCOPE_PREFIX),
+  );
+}
+
+function immediateExclusions(task: ProviderNeutralTask) {
+  return task.contract.scope.excluded.filter((item) =>
+    !item.description.startsWith(DEFERRED_SCOPE_PREFIX),
+  );
+}
+
+function deferredScopeItems(task: ProviderNeutralTask): string {
+  return scopeItems(
+    deferredScope(task).map((item) => ({
+      ...item,
+      description: item.description.slice(DEFERRED_SCOPE_PREFIX.length).trim(),
+    })),
+  );
 }
 
 function criteria(task: ProviderNeutralTask): string {
@@ -150,7 +172,13 @@ ${scopeItems(spec.scope.included)}
 
 ## Excluded Scope
 
-${scopeItems(spec.scope.excluded)}
+${scopeItems(immediateExclusions(task))}
+
+## Deferred Follow-up Work
+
+These items are intentionally outside this run. Preserve them in the final report; do not implement them unless the contract is revised and reconfirmed.
+
+${deferredScopeItems(task)}
 
 ## Assumptions
 
@@ -233,7 +261,13 @@ ${scopeItems(spec.scope.included)}
 
 ## Excluded Scope
 
-${scopeItems(spec.scope.excluded)}
+${scopeItems(immediateExclusions(task))}
+
+## Deferred Follow-up Work
+
+These items are intentionally outside this run. Preserve them in the final report; do not implement them unless the contract is revised and reconfirmed.
+
+${deferredScopeItems(task)}
 
 ## Confirmed Assumptions
 

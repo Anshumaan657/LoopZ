@@ -71,11 +71,15 @@ function classifyTaskType(intake: IdeaIntake): IntakeTaskType {
     return "landing_page";
   }
 
+  if (intake.projectStatus === "new") {
+    return "new_web_application";
+  }
+
   if (
     intake.projectStatus === "existing" ||
-    /\b(add|integrate|extend|update|change|refactor|existing|current|my app|our app)\b/.test(
-      prompt,
-    )
+    /\bexisting\b/.test(prompt) ||
+    /\b(existing|current)\s+(?:app|application|site|website|project|repo(?:sitory)?|codebase)\b/.test(prompt) ||
+    /\b(?:my|our)\s+(?:existing|current)\s+(?:app|application|site|website|project|repo(?:sitory)?|codebase)\b/.test(prompt)
   ) {
     return "existing_app_feature";
   }
@@ -96,11 +100,22 @@ function splitPromptSegments(prompt: string): string[] {
 }
 
 function extractCapabilities(prompt: string): string[] {
-  const candidates = splitPromptSegments(prompt)
+  const segments = splitPromptSegments(prompt)
     .map((part) => part.replace(/^[-*\d.)\s]+/, "").trim())
     .filter((part) => part.length >= 6);
+  const candidates = segments.filter((part, index) => {
+    if (/^(?:here(?:'s| is) what|basically|for context|background:)/i.test(part)) return false;
+    if (
+      segments.length > 1 &&
+      index === 0 &&
+      /^i(?:'m| am|\s+want to)\s+(?:working on|planning|make|build|create)\b/i.test(part)
+    ) {
+      return false;
+    }
+    return /\b(?:add|allow|build|can|create|display|include|let|make|mark|must|need|remember|require|save|show|should|store|support|track|view|want)\b/i.test(part);
+  });
 
-  return [...new Set(candidates)].slice(0, 8);
+  return [...new Set(candidates)].slice(0, 16);
 }
 
 function extractConstraints(intake: IdeaIntake): string[] {
