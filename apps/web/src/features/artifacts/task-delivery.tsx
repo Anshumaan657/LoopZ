@@ -295,6 +295,7 @@ export function TaskDelivery({ projectId, requestedVersionId }: {
               tabIndex={0}
             ><code>{selectedArtifact.content}</code></pre>
           </details>
+          <p className={styles.disclaimer}>LoopZ can make mistakes. Please re-verify the generated task before execution.</p>
           <div className={styles.feedback} aria-live="polite">
             {notice ? <p className={styles.success}>{notice}</p> : null}
             {error ? <p className={styles.error} role="alert">{error}</p> : null}

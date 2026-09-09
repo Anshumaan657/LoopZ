@@ -17,6 +17,8 @@
   --color-overlay: oklch(7% 0.006 265 / 0.92);
   --color-overlay-strong: oklch(7% 0.006 265 / 0.97);
   --color-danger-rule: oklch(55% 0.018 25 / 0.65);
+  --color-brand: oklch(71.306% 0.1215 191.35);
+  --color-brand-hover: oklch(78% 0.105 191.35);
 
   --font-display: var(--font-geist-sans), "Geist", sans-serif;
   --font-body: var(--font-geist-sans), "Geist", sans-serif;

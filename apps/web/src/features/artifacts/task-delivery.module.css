@@ -47,6 +47,7 @@
 .raw summary:hover { background: var(--surface-strong); }
 .raw[open] summary { border-bottom: 1px solid var(--border); }
 .preview { min-height: 28rem; max-height: 65vh; margin: 0; padding: 1.25rem; overflow: auto; background: var(--background); color: var(--color-ink-2); font: .875rem/1.72 var(--font-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.disclaimer { margin: 0; padding: var(--space-sm) var(--space-md) 0; border-top: var(--rule-thin) solid var(--border); color: var(--muted-soft); font-size: var(--text-xs); line-height: 1.5; }
 .actions { display: flex; flex-wrap: wrap; gap: .65rem; padding: 1rem; border-top: 1px solid var(--border); }
 .actions button { cursor: pointer; }
 .feedback { min-height: 3.25rem; padding: 0 1rem .5rem; }

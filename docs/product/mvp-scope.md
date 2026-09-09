@@ -36,13 +36,15 @@ A small web application or clearly bounded feature whose completion can be evalu
 
 ## Infrastructure boundary (MVP)
 
-LoopZ MVP is a **browser-local Next.js application** using `localStorage` for workflow persistence.
+LoopZ MVP is a **client-driven Next.js application** using Firebase Authentication for Google and email/password accounts, Cloud Firestore for private workflow history, and `localStorage` as the active browser cache.
 
-- No backend API, no database, no server-side model calls.
-- `DATABASE_URL` and `MODEL_API_KEY` in `.env.example` are reserved for post-MVP phases.
+- No custom backend API and no server-side model calls.
+- `DATABASE_URL` and `MODEL_API_KEY` in `.env.example` remain reserved for post-MVP phases.
 - All contract generation, validation, assessment, and repair compilation run as browser JavaScript compiled from TypeScript.
-- Browser storage limits apply (typically 5–10 MB per origin); users can clear data at any time.
-- Return links contain UUIDv4 run IDs but are **not authentication or authorization credentials**. They resolve only when the matching run data exists in the same browser origin.
+- Firestore stores each user's workflow state beneath `/users/{uid}` and published Security Rules require the authenticated UID to match that path.
+- Browser storage limits still apply to the active cache. Signing out removes the signed-in user's workflow cache from that browser after pending cloud writes finish.
+- Existing browser-local projects created before authentication are imported into the first account that signs in on that browser.
+- Return links contain UUIDv4 run IDs but are **not authentication or authorization credentials**. A signed-in account must own the corresponding restored run state.
 
 ## MVP terminal states
 

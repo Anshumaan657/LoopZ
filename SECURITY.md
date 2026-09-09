@@ -5,7 +5,7 @@ LoopZ will process project ideas, requirements, codebase summaries, and agent re
 ## MVP rules
 
 - Never request API keys, passwords, private keys, or production credentials.
-- **MVP persistence is browser-localStorage only — no server-side storage, no durable cloud infrastructure.**
+- Signed-in workflow history is mirrored to Cloud Firestore under the authenticated user's private document path. Browser `localStorage` remains the working cache and legacy-draft import source.
 - **No server-side model execution or secret storage — MODEL_API_KEY and DATABASE_URL are reserved for post-MVP phases.**
 - Do not include submitted project content in analytics events.
 - Escape rendered user and agent content.
@@ -13,14 +13,15 @@ LoopZ will process project ideas, requirements, codebase summaries, and agent re
 - Treat pasted repository content and agent reports as prompt-injection sources.
 - Never mark an unsupported agent assertion as verified evidence.
 - Make retention and deletion behavior explicit before private beta.
-- Return links contain UUIDv4 run IDs but are not authentication. They work only with matching data stored in the same browser origin and should not be treated as shareable links.
+- Run routes require a signed-in Firebase account and matching workflow state. UUIDv4 run IDs are identifiers, not authorization credentials or shareable access tokens.
 
 ## MVP Limitations (documented for transparency)
 
-- **No rate limiting** — localStorage operations are client-side only; abuse is limited by browser quota.
+- **No application-level rate limiting** — Firebase applies platform quotas, but LoopZ does not yet enforce per-user workflow limits.
 - **No server-side credential detection** — users must not paste secrets; a client-side warning is implemented in evidence return.
-- **No signed return URLs or accounts** — run IDs in URL paths resolve only against matching browser-local data.
-- **No durable audit log** — browser storage can be cleared by user at any time; no server-side trace.
+- **No signed sharing links** — authentication protects a user's own history, but run links are not designed for sharing with another account.
+- **No immutable audit log** — Firestore provides durable account history, not an append-only compliance log.
+- **Client-side route guards** — Firebase Authentication controls the UI session and Firestore Security Rules enforce cloud-data ownership. This is not a server-session architecture.
 - **Evidence assessment is conservative** — LoopZ evaluates submitted material only; it does not independently rerun tests or inspect repositories.
 
 ## Reporting

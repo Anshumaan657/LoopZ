@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { AccountNavigation } from "../features/auth/account-navigation";
+
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell">
@@ -10,6 +12,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Link className="wordmark" href="/" aria-label="LoopZ home">LoopZ</Link>
           <nav aria-label="Primary navigation">
             <Link href="/about">About</Link>
+            <AccountNavigation />
             <Link className="nav-cta" href="/projects/new">Start a project</Link>
           </nav>
         </div>

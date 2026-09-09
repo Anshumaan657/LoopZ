@@ -13,8 +13,9 @@
     "@loopz/contracts": "*",
     "@loopz/core": "*",
     "@loopz/universal-adapter": "*",
+    "firebase": "^12.18.0",
     "geist": "^1.7.2",
-    "next": "16.3.1",
+    "next": "16.3.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

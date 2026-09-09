@@ -12,6 +12,21 @@ export class StorageCorruptedError extends Error {
   }
 }
 
+export const LOOPZ_STORAGE_CHANGE_EVENT = "loopz:storage-change";
+
+export type LoopZStorageChange = {
+  key: string;
+  value: string | null;
+  changedAt: string;
+};
+
+function announceStorageChange(key: string, value: string | null): void {
+  if (typeof window === "undefined" || typeof CustomEvent === "undefined") return;
+  window.dispatchEvent(new CustomEvent<LoopZStorageChange>(LOOPZ_STORAGE_CHANGE_EVENT, {
+    detail: { key, value, changedAt: new Date().toISOString() },
+  }));
+}
+
 function isQuotaExceeded(error: unknown): boolean {
   return error instanceof DOMException && (error.name === "QuotaExceededError" || error.code === 22);
 }
@@ -28,6 +43,7 @@ export function safeGetItem(key: string): string | null {
 export function safeSetItem(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
+    announceStorageChange(key, value);
   } catch (error) {
     if (isQuotaExceeded(error)) throw new StorageQuotaExceededError();
     throw new StorageCorruptedError(`Failed to write ${key}: ${error instanceof Error ? error.message : String(error)}`);
@@ -37,6 +53,7 @@ export function safeSetItem(key: string, value: string): void {
 export function safeRemoveItem(key: string): void {
   try {
     localStorage.removeItem(key);
+    announceStorageChange(key, null);
   } catch (error) {
     if (isQuotaExceeded(error)) throw new StorageQuotaExceededError();
     throw new StorageCorruptedError(`Failed to remove ${key}: ${error instanceof Error ? error.message : String(error)}`);

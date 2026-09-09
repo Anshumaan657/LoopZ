@@ -1,0 +1,33 @@
+/* Hallmark · page: project history · genre: atmospheric · design-system: design.md
+ * states: default · hover · focus · active · disabled · loading · error · success
+ * contrast: pass (46–50)
+ */
+.page { width: min(var(--content-wide), calc(100% - (var(--page-gutter) * 2))); min-height: calc(100svh - var(--header-height)); margin: 0 auto; padding: var(--space-2xl) 0 var(--space-3xl); }
+.header { display: flex; align-items: end; justify-content: space-between; gap: var(--space-xl); padding-bottom: var(--space-xl); border-bottom: var(--rule-strong) solid var(--text); }
+.header > div { max-width: 48rem; }
+.header h1 { max-width: 15ch; }
+.header p:last-child { max-width: 42rem; }
+.syncWarning { margin: var(--space-lg) 0 0; padding: var(--space-md); border: var(--rule-thin) solid var(--border-strong); border-radius: var(--radius-input); font-size: var(--text-sm); }
+.syncWarning strong { color: var(--text); }
+.list { margin-top: var(--space-xl); }
+.listHeading { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); padding-bottom: var(--space-md); }
+.listHeading h2 { margin: 0; font-size: var(--text-md); }
+.listHeading span { color: var(--muted); font-size: var(--text-sm); }
+.item { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-xl); padding: var(--space-lg) 0; border-top: var(--rule-thin) solid var(--border); }
+.item:last-child { border-bottom: var(--rule-thin) solid var(--border); }
+.itemMain { min-width: 0; }
+.stage { color: var(--color-ink-2); font-family: var(--font-mono); font-size: var(--text-xs); letter-spacing: .06em; text-transform: uppercase; }
+.item h3 { margin: var(--space-xs) 0; font-size: var(--text-md); overflow-wrap: anywhere; }
+.item p { margin: 0; font-size: var(--text-sm); }
+.itemActions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-sm); }
+.deleteButton, .confirmDelete button { min-height: 44px; border: 0; background: transparent; color: var(--muted); cursor: pointer; text-decoration: underline; text-underline-offset: var(--space-2xs); }
+.deleteButton:hover, .confirmDelete button:hover { color: var(--text); }
+.confirmDelete { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-sm); border: var(--rule-thin) solid var(--border-strong); border-radius: var(--radius-input); }
+.confirmDelete span { max-width: 12rem; color: var(--color-ink-2); font-size: var(--text-sm); }
+.confirmDelete button:first-of-type { color: var(--danger); }
+.empty { max-width: 42rem; margin: clamp(var(--space-2xl), 10vh, var(--space-4xl)) auto; text-align: center; }
+.empty h2 { margin: var(--space-md) auto; font-size: var(--text-2xl); }
+.empty p:not(:first-child) { max-width: 38rem; margin-inline: auto; }
+.empty .button { margin-top: var(--space-md); }
+@media (max-width: 720px) { .header { align-items: flex-start; flex-direction: column; } .item { grid-template-columns: 1fr; gap: var(--space-md); } .itemActions { justify-content: flex-start; } }
+@media (max-width: 520px) { .page { width: min(100% - 24px, var(--content-wide)); padding-top: var(--space-xl); } .header .button { width: 100%; } .itemActions, .confirmDelete { align-items: stretch; flex-direction: column; } .itemActions .button, .deleteButton, .confirmDelete button { width: 100%; } .confirmDelete span { max-width: none; } }

@@ -9,7 +9,9 @@
 
 ## Trust boundaries
 
-- Browser UI to same-origin `localStorage`.
+- Browser UI to same-origin `localStorage` cache.
+- Firebase Authentication session to Cloud Firestore.
+- Firestore Security Rules to per-user documents under `/users/{uid}`.
 - User-pasted repository context.
 - User-pasted agent output.
 
@@ -17,8 +19,9 @@
 
 - Prompt injection through pasted content.
 - Accidental credential submission.
-- Sensitive content remaining in shared browser storage.
-- Another person using the same browser profile opening a known run URL.
+- Sensitive content remaining in a signed-in browser session or Firestore history.
+- Another person using an unlocked signed-in browser profile.
+- Misconfigured or weakened Firestore Security Rules.
 - False completion claims treated as verification.
 - Oversized or malicious input.
 - Browser storage quota exhaustion or corrupted local data.
@@ -26,9 +29,11 @@
 ## MVP controls
 
 - Structured deterministic output and schema validation.
-- No model-provider or database credentials in the web application.
+- No model-provider or Firebase Admin credentials in the web application. Firebase Web configuration is public by design.
 - UUIDv4 identifiers validated at dynamic route boundaries.
-- Input-size limits; there is no server-side rate limiting in the browser-only MVP.
+- Firebase Authentication on workflow routes and UID-scoped Firestore Security Rules for cloud history.
+- Local workflow state is cleared on sign-out and before switching between previously identified accounts on the same browser.
+- Input-size limits; there is no application-level per-user rate limiting in the MVP.
 - Credential-pattern detection blocks evidence submission until suspected secrets are removed.
 - Explicit retention and deletion behavior.
 - Deterministic evidence-presence checks.
@@ -36,4 +41,4 @@
 
 ## Deferred controls
 
-Authenticated ownership, signed shareable return links, server-side rate limiting, durable audit logs, and server-side secret scanning require post-MVP infrastructure.
+Signed shareable return links, server-side rate limiting, immutable audit logs, Firebase App Check, and server-side secret scanning require post-MVP infrastructure.

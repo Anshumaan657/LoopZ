@@ -22,8 +22,9 @@ Atmospheric, technical, restrained.
 - `--color-rule`: `oklch(27% 0.008 265)`
 - `--color-accent`: `oklch(94% 0.006 265)`
 - `--color-focus`: `oklch(82% 0.025 265)`
+- `--color-brand`: `oklch(71.306% 0.1215 191.35)` (Tiffany Blue `#0ABAB5`, reserved for the LoopZ wordmark and identity details)
 
-The palette remains monochrome. Error and warning tokens use only a trace tint and are always paired with text, symbols, or labels so state is never communicated by colour alone.
+The product interface remains monochrome. Tiffany Blue is a tightly reserved brand accent for the LoopZ wordmark and identity details; it is not used for workflow state or broad surfaces. Error and warning tokens use only a trace tint and are always paired with text, symbols, or labels so state is never communicated by colour alone.
 
 ## Typography
 
